@@ -10,8 +10,22 @@ use WP_REST_Response;
 class Query {
     private static $url = 'https://app.templately.com/api/plugin';
 
+    private static $instance = null;
+    private static $dev_mode = false;
+
+    public static function instance(){
+        if( is_null( static::$instance ) ) {
+            static::$instance = new static;
+        }
+        return static::$instance;
+    }
+
+    public function __construct(){
+        self::$dev_mode = defined('TEMPLATELY_DEV') && TEMPLATELY_DEV;
+    }
+
     private static function get_url(){
-        if( defined('TEMPLATELY_DEV') && TEMPLATELY_DEV ) {
+        if( self::$dev_mode ) {
             self::$url = 'https://app.templately.dev/api/plugin';
         }
         return self::$url;
@@ -33,6 +47,7 @@ class Query {
 
         $response = wp_remote_post( self::get_url(),
             array(
+                'timeout' => self::$dev_mode ? 40 : 15,
                 'headers' => $headers,
                 'body' => wp_json_encode([
                     'query' => $query

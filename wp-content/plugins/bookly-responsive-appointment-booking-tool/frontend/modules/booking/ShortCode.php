@@ -6,6 +6,7 @@ use Bookly\Frontend\Modules\Booking\Lib\Errors;
 
 /**
  * Class ShortCode
+ *
  * @package Bookly\Frontend\Modules\Booking
  */
 class ShortCode extends Lib\Base\Component
@@ -72,7 +73,7 @@ class ShortCode extends Lib\Base\Component
                     'frontend/resources/js/picker.js' => array( 'jquery' ),
                     'frontend/resources/js/picker.date.js' => array( 'bookly-picker.js' ),
                     'frontend/resources/js/bookly.min.js' => Proxy\Shared::enqueueBookingScripts( array( 'bookly-hammer.min.js', 'bookly-picker.date.js' ) ),
-                )
+                ),
             ) );
             if ( get_option( 'bookly_cst_phone_default_country' ) != 'disabled' ) {
                 self::enqueueScripts( array(
@@ -89,15 +90,16 @@ class ShortCode extends Lib\Base\Component
             }
 
             wp_localize_script( 'bookly-bookly.min.js', 'BooklyL10n', array(
-                'ajaxurl'    => $ajaxurl,
+                'ajaxurl' => $ajaxurl,
                 'csrf_token' => Lib\Utils\Common::getCsrfToken(),
-                'today'      => __( 'Today', 'bookly' ),
-                'months'     => array_values( $wp_locale->month ),
-                'days'       => array_values( $wp_locale->weekday ),
-                'daysShort'  => array_values( $wp_locale->weekday_abbrev ),
-                'nextMonth'  => __( 'Next month', 'bookly' ),
-                'prevMonth'  => __( 'Previous month', 'bookly' ),
-                'show_more'  => __( 'Show more', 'bookly' ),
+                'today' => __( 'Today', 'bookly' ),
+                'months' => array_values( $wp_locale->month ),
+                'days' => array_values( $wp_locale->weekday ),
+                'daysShort' => array_values( $wp_locale->weekday_abbrev ),
+                'monthsShort' => array_values( $wp_locale->month_abbrev ),
+                'nextMonth' => __( 'Next month', 'bookly' ),
+                'prevMonth' => __( 'Previous month', 'bookly' ),
+                'show_more' => __( 'Show more', 'bookly' ),
             ) );
         }
     }
@@ -152,22 +154,22 @@ class ShortCode extends Lib\Base\Component
 
         // Handle short code attributes.
         $fields_to_hide = isset ( $attributes['hide'] ) ? explode( ',', $attributes['hide'] ) : array();
-        $location_id    = (int) ( isset( $_GET['loc_id'] ) ? $_GET['loc_id'] : ( isset( $attributes['location_id'] ) ? $attributes['location_id'] : 0 ) );
-        $category_id    = (int) ( isset( $_GET['cat_id'] ) ? $_GET['cat_id'] : ( isset( $attributes['category_id'] ) ? $attributes['category_id'] : 0 ) );
-        $service_id     = (int) ( isset( $_GET['service_id'] ) ? $_GET['service_id'] : ( isset( $attributes['service_id'] ) ? $attributes['service_id'] : 0 ) );
-        $staff_id       = (int) ( isset( $_GET['staff_id'] ) ? $_GET['staff_id'] : ( isset( $attributes['staff_member_id'] ) ? $attributes['staff_member_id'] : 0 ) );
+        $location_id = (int) ( isset( $_GET['loc_id'] ) ? $_GET['loc_id'] : ( isset( $attributes['location_id'] ) ? $attributes['location_id'] : 0 ) );
+        $category_id = (int) ( isset( $_GET['cat_id'] ) ? $_GET['cat_id'] : ( isset( $attributes['category_id'] ) ? $attributes['category_id'] : 0 ) );
+        $service_id = (int) ( isset( $_GET['service_id'] ) ? $_GET['service_id'] : ( isset( $attributes['service_id'] ) ? $attributes['service_id'] : 0 ) );
+        $staff_id = (int) ( isset( $_GET['staff_id'] ) ? $_GET['staff_id'] : ( isset( $attributes['staff_member_id'] ) ? $attributes['staff_member_id'] : 0 ) );
 
         $form_attributes = array(
-            'hide_categories'        => in_array( 'categories', $fields_to_hide ),
-            'hide_services'          => in_array( 'services', $fields_to_hide ),
-            'hide_staff_members'     => in_array( 'staff_members', $fields_to_hide ) && ( get_option( 'bookly_app_required_employee' ) ? $staff_id : true ),
+            'hide_categories' => in_array( 'categories', $fields_to_hide ),
+            'hide_services' => in_array( 'services', $fields_to_hide ),
+            'hide_staff_members' => in_array( 'staff_members', $fields_to_hide ) && ( get_option( 'bookly_app_required_employee' ) ? $staff_id : true ),
             'show_number_of_persons' => (bool) ( isset( $attributes['show_number_of_persons'] ) ? $attributes['show_number_of_persons'] : false ),
-            'hide_service_duration'  => true,
-            'hide_locations'         => true,
-            'hide_quantity'          => true,
-            'hide_date'              => in_array( 'date', $fields_to_hide ),
-            'hide_week_days'         => in_array( 'week_days', $fields_to_hide ),
-            'hide_time_range'        => in_array( 'time_range', $fields_to_hide ),
+            'hide_service_duration' => true,
+            'hide_locations' => true,
+            'hide_quantity' => true,
+            'hide_date' => in_array( 'date', $fields_to_hide ),
+            'hide_week_days' => in_array( 'week_days', $fields_to_hide ),
+            'hide_time_range' => in_array( 'time_range', $fields_to_hide ),
         );
         if ( $form_attributes['hide_categories'] && $category_id ) {
             // Keeping 'admin' preselected category,
@@ -183,7 +185,7 @@ class ShortCode extends Lib\Base\Component
             $form_attributes['hide_locations'] = in_array( 'locations', $fields_to_hide );
         }
         if ( Lib\Config::multiplyAppointmentsActive() ) {
-            $form_attributes['hide_quantity']  = in_array( 'quantity',  $fields_to_hide );
+            $form_attributes['hide_quantity'] = in_array( 'quantity', $fields_to_hide );
         }
 
         $hide_service_part1 = (
@@ -208,37 +210,37 @@ class ShortCode extends Lib\Base\Component
 
         // Errors.
         $errors = array(
-            Errors::SESSION_ERROR               => __( 'Session error.', 'bookly' ),
-            Errors::FORM_ID_ERROR               => __( 'Form ID error.', 'bookly' ),
-            Errors::CART_ITEM_NOT_AVAILABLE     => Lib\Utils\Common::getTranslatedOption( Lib\Config::showStepCart() ? 'bookly_l10n_step_cart_slot_not_available' : 'bookly_l10n_step_time_slot_not_available' ),
-            Errors::PAY_LOCALLY_NOT_AVAILABLE   => __( 'Pay locally is not available.', 'bookly' ),
-            Errors::INVALID_GATEWAY             => __( 'Invalid gateway.', 'bookly' ),
-            Errors::PAYMENT_ERROR               => __( 'Error.', 'bookly' ),
+            Errors::SESSION_ERROR => __( 'Session error.', 'bookly' ),
+            Errors::FORM_ID_ERROR => __( 'Form ID error.', 'bookly' ),
+            Errors::CART_ITEM_NOT_AVAILABLE => Lib\Utils\Common::getTranslatedOption( Lib\Config::showStepCart() ? 'bookly_l10n_step_cart_slot_not_available' : 'bookly_l10n_step_time_slot_not_available' ),
+            Errors::PAY_LOCALLY_NOT_AVAILABLE => __( 'Pay locally is not available.', 'bookly' ),
+            Errors::INVALID_GATEWAY => __( 'Invalid gateway.', 'bookly' ),
+            Errors::PAYMENT_ERROR => __( 'Error.', 'bookly' ),
             Errors::INCORRECT_USERNAME_PASSWORD => __( 'Incorrect username or password.' ),
         );
 
         // Set parameters for bookly form.
         $bookly_options = array(
-            'form_id'              => $form_id,
-            'status'               => $status,
-            'skip_steps'           => array(
+            'form_id' => $form_id,
+            'status' => $status,
+            'skip_steps' => array(
                 /**
                  * [extras,time,repeat]
                  * can be modified @see Proxy\Shared::booklyFormOptions
                  */
                 'service_part1' => (int) $hide_service_part1,
                 'service_part2' => (int) $hide_service_part2,
-                'extras'        => (int) true,
-                'time'          => (int) false,
-                'repeat'        => (int) ( ! Lib\Config::recurringAppointmentsActive() || ! get_option( 'bookly_recurring_appointments_enabled' ) ),
-                'cart'          => (int) ( Lib\Config::wooCommerceEnabled() ?: ! Lib\Config::showStepCart() ),
+                'extras' => (int) true,
+                'time' => (int) false,
+                'repeat' => (int) ( ! Lib\Config::recurringAppointmentsActive() || ! get_option( 'bookly_recurring_appointments_enabled' ) || Lib\Config::showSingleTimeSlot() ),
+                'cart' => (int) ( Lib\Config::wooCommerceEnabled() ?: ! Lib\Config::showStepCart() ),
             ),
-            'errors'               => $errors,
-            'form_attributes'      => $form_attributes,
+            'errors' => $errors,
+            'form_attributes' => $form_attributes,
             'use_client_time_zone' => (int) Lib\Config::useClientTimeZone(),
-            'firstDay'             => (int) get_option( 'start_of_week' ),
-            'date_format'          => Lib\Utils\DateTime::convertFormat( 'date', Lib\Utils\DateTime::FORMAT_PICKADATE ),
-            'defaults'             => compact( 'service_id', 'staff_id', 'location_id', 'category_id' ),
+            'firstDay' => (int) get_option( 'start_of_week' ),
+            'date_format' => Lib\Utils\DateTime::convertFormat( 'date', Lib\Utils\DateTime::FORMAT_PICKADATE ),
+            'defaults' => compact( 'service_id', 'staff_id', 'location_id', 'category_id' ),
         );
 
         $bookly_options = Proxy\Shared::booklyFormOptions( $bookly_options );

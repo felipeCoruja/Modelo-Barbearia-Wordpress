@@ -3,22 +3,22 @@ use Bookly\Backend\Components\Settings\Selects;
 
 $bookly_email_sender_name = get_option( 'bookly_email_sender_name' ) == '' ?
     get_option( 'blogname' ) : get_option( 'bookly_email_sender_name' );
-$bookly_email_sender      = get_option( 'bookly_email_sender' ) == '' ?
+$bookly_email_sender = get_option( 'bookly_email_sender' ) == '' ?
     get_option( 'admin_email' ) : get_option( 'bookly_email_sender' );
 ?>
 <div class="row">
     <div class="col-md-12">
         <div class="form-group">
-            <label for="sender_name<?php echo $tail ?>"><?php esc_html_e( 'Sender name', 'bookly' ) ?></label>
-            <input id="sender_name<?php echo $tail ?>" name="bookly_email_sender_name" class="form-control" type="text" value="<?php echo esc_attr( $bookly_email_sender_name ) ?>">
+            <label for="sender_name<?php echo esc_attr( $tail ) ?>"><?php esc_html_e( 'Sender name', 'bookly' ) ?></label>
+            <input id="sender_name<?php echo esc_attr( $tail ) ?>" name="bookly_email_sender_name" class="form-control" type="text" value="<?php echo esc_attr( $bookly_email_sender_name ) ?>">
         </div>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
         <div class="form-group">
-            <label for="sender_email<?php echo $tail ?>"><?php esc_html_e( 'Sender email', 'bookly' ) ?></label>
-            <input id="sender_email<?php echo $tail ?>" name="bookly_email_sender" class="form-control bookly-sender" type="text" value="<?php echo esc_attr( $bookly_email_sender ) ?>">
+            <label for="sender_email<?php echo esc_attr( $tail ) ?>"><?php esc_html_e( 'Sender email', 'bookly' ) ?></label>
+            <input id="sender_email<?php echo esc_attr( $tail ) ?>" name="bookly_email_sender" class="form-control bookly-sender" type="text" value="<?php echo esc_attr( $bookly_email_sender ) ?>">
         </div>
     </div>
 </div>

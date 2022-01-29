@@ -3,20 +3,22 @@
     var Details = function ($container, options) {
         var obj = this;
         jQuery.extend(obj.options, options);
-        let $form            = $('.bookly-js-staff-details', $container),
+        let $form = $('.bookly-js-staff-details', $container),
             $staff_full_name = $('#bookly-full-name', $container),
-            $staff_wp_user   = $('#bookly-wp-user', $container),
-            $staff_email     = $('#bookly-email', $container),
-            $staff_phone     = $('#bookly-phone', $container),
+            $staff_wp_user = $('#bookly-wp-user', $container),
+            $staff_email = $('#bookly-email', $container),
+            $staff_phone = $('#bookly-phone', $container),
             $staff_locations = $('#bookly-js-locations', $container),
-            $staff_color     = $('.bookly-js-color-picker', $container)
+            $staff_gateways_list = $('#bookly-js-gateways-list', $form),
+            $staff_gateways = $('#bookly-gateways', $container),
+            $staff_color = $('.bookly-js-color-picker', $container)
         ;
 
         if (obj.options.intlTelInput.enabled) {
             $staff_phone.intlTelInput({
                 preferredCountries: [obj.options.intlTelInput.country],
-                initialCountry    : obj.options.intlTelInput.country,
-                geoIpLookup       : function (callback) {
+                initialCountry: obj.options.intlTelInput.country,
+                geoIpLookup: function (callback) {
                     $.get('https://ipinfo.io', function () {
                     }, 'jsonp').always(function (resp) {
                         var countryCode = (resp && resp.country) ? resp.country : '';
@@ -38,6 +40,7 @@
         }
 
         $staff_locations.booklyDropdown();
+        $staff_gateways_list.booklyDropdown();
 
         $container
             .on('click', '.bookly-thumb label', function (e) {
@@ -120,6 +123,7 @@
             .on('click', 'button:reset', function () {
                 setTimeout(function () {
                     $staff_locations.booklyDropdown('reset');
+                    $staff_gateways_list.booklyDropdown('reset');
                 }, 0);
             })
             .on('input', '#bookly-email', function () {
@@ -127,7 +131,15 @@
             })
             .on('input', '#bookly-full-name', function () {
                 obj.options.validation(this.value == '', '');
+            })
+            .on('change', '[name="gateways"]', function () {
+                if (this.value == 'default') {
+                    $staff_gateways_list.closest('.form-group').hide();
+                } else {
+                    $staff_gateways_list.closest('.form-group').show();
+                }
             });
+        $('[name="gateways"]:checked', $form).trigger('change');
     };
 
     Details.prototype.options = {

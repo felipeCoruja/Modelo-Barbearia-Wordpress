@@ -47,8 +47,8 @@ jQuery(function ($) {
                     url  : ajaxurl,
                     type : 'POST',
                     data : {
-                        action    : 'bookly_get_staff_count',
-                        csrf_token: BooklyStaffEditDialogL10n.csrfToken
+                        action: 'bookly_get_staff_count',
+                        csrf_token: BooklyL10nGlobal.csrf_token
                     },
                     dataType : 'json',
                     success  : function (response) {
@@ -78,7 +78,7 @@ jQuery(function ($) {
         $saveBtn.prop('disabled', false);
         $modalBody.html('<div class="bookly-loading"></div>');
         $modal.booklyModal();
-        $.get(ajaxurl, {action: 'bookly_get_staff_data', id: staff_id, csrf_token: BooklyStaffEditDialogL10n.csrfToken}, function (response) {
+        $.get(ajaxurl, {action: 'bookly_get_staff_data', id: staff_id, csrf_token: BooklyL10nGlobal.csrf_token}, function (response) {
             $modalBody.html(response.data.html.edit);
             booklyAlert(response.data.alert);
             $modalFooter.show();
@@ -119,7 +119,7 @@ jQuery(function ($) {
         let data = $.extend({
             action       : 'bookly_remove_staff',
             'staff_ids[]': staff_id,
-            csrf_token   : BooklyStaffEditDialogL10n.csrfToken
+            csrf_token   : BooklyL10nGlobal.csrf_token
         }, _data);
 
         $.post(ajaxurl, data, function (response) {

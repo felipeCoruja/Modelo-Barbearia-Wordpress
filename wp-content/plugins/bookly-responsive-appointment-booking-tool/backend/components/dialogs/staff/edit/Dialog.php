@@ -37,8 +37,7 @@ class Dialog extends Lib\Base\Component
             ,
             'backend'  => array(
                 'js/jCal.js'            => array( 'jquery' ),
-                'js/select2.min.js'     => array( 'bookly-backend-globals' ),
-                'js/range-tools.js'     => array( 'bookly-select2.min.js' ),
+                'js/range-tools.js'     => array( 'bookly-backend-globals' ),
             ),
             'module'   => array(
                 'js/staff-details.js'     => array( 'bookly-range-tools.js', 'wp-color-picker' ),
@@ -60,34 +59,33 @@ class Dialog extends Lib\Base\Component
         }
 
         wp_localize_script( 'bookly-staff-edit-dialog.js', 'BooklyStaffEditDialogL10n', array(
-            'csrfToken' => Lib\Utils\Common::getCsrfToken(),
-            'intlTelInput'          => array(
-                'enabled' => get_option( 'bookly_cst_phone_default_country' ) != 'disabled',
-                'utils'   => plugins_url( 'intlTelInput.utils.js', Lib\Plugin::getDirectory() . '/frontend/resources/js/intlTelInput.utils.js' ),
+            'intlTelInput' => array(
                 'country' => get_option( 'bookly_cst_phone_default_country' ),
+                'enabled' => get_option( 'bookly_cst_phone_default_country' ) != 'disabled',
+                'utils' => plugins_url( 'intlTelInput.utils.js', Lib\Plugin::getDirectory() . '/frontend/resources/js/intlTelInput.utils.js' ),
             ),
             'holidays' => array(
-                'loading_img'        => plugins_url( 'bookly-responsive-appointment-booking-tool/backend/resources/images/loading.gif' ),
-                'firstDay'           => (int) get_option( 'start_of_week' ),
-                'days'               => array_values( $wp_locale->weekday_abbrev ),
-                'months'             => array_values( $wp_locale->month ),
-                'close'              => esc_attr__( 'Close', 'bookly' ),
-                'repeat'             => esc_attr__( 'Repeat every year', 'bookly' ),
-                'we_are_not_working' => esc_attr__( 'We are not working on this day', 'bookly' ),
+                'close' => esc_attr__( 'Close', 'bookly' ),
+                'days' => array_values( $wp_locale->weekday_abbrev ),
+                'firstDay' => (int) get_option( 'start_of_week' ),
+                'loading_img' => plugins_url( 'bookly-responsive-appointment-booking-tool/backend/resources/images/loading.gif' ),
+                'months' => array_values( $wp_locale->month ),
+                'repeat' => esc_attr__( 'Repeat every year', 'bookly' ),
                 'special_days_error' => esc_attr__( 'The date has already passed.', 'bookly' ),
+                'we_are_not_working' => esc_attr__( 'We are not working on this day', 'bookly' ),
             ),
             'services' => array(
                 'capacity_error' => esc_attr__( 'Min capacity should not be greater than max capacity.', 'bookly' ),
-                'hideTip'        => get_user_meta( get_current_user_id(), 'bookly_packages_hide_staff_services_tip', true ),
+                'hideTip' => get_user_meta( get_current_user_id(), 'bookly_packages_hide_staff_services_tip', true ),
             ),
-            'createStaff'         => esc_attr__( 'Create staff', 'bookly' ),
-            'editStaff'           => esc_attr__( 'Edit staff', 'bookly' ),
-            'areYouSure'          => esc_attr__( 'Are you sure?', 'bookly' ),
-            'settingsSaved'       => esc_attr__( 'Settings saved.', 'bookly' ),
-            'proRequired'         => (int) ! Lib\Config::proActive(),
-            'limitation'          => Limitation::getHtml(),
-            'currentTab'          => self::parameter( 'tab', 'details' ),
-            'staff'               => $query->sortBy( 'position' )->fetchArray(),
+            'areYouSure' => esc_attr__( 'Are you sure?', 'bookly' ),
+            'createStaff' => esc_attr__( 'Create staff', 'bookly' ),
+            'currentTab' => self::parameter( 'tab', 'details' ),
+            'editStaff' => esc_attr__( 'Edit staff', 'bookly' ),
+            'limitation' => Limitation\Notice::forNewStaff(),
+            'proRequired' => (int) ! Lib\Config::proActive(),
+            'settingsSaved' => esc_attr__( 'Settings saved.', 'bookly' ),
+            'staff' => $query->sortBy( 'position' )->fetchArray(),
         ) );
 
         self::renderTemplate( 'dialog' );

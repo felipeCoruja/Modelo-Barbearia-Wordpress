@@ -72,13 +72,13 @@ class Finder
      */
     public function __construct( Lib\UserBookingData $userData, $callback_group = null, $callback_stop = null, $waiting_list_enabled = null, $ignore_appointments = array() )
     {
-        $this->userData                    = $userData;
-        $this->slot_length                 = Lib\Config::getTimeSlotLength();
+        $this->userData = $userData;
+        $this->slot_length = Lib\Config::getTimeSlotLength();
         $this->srv_duration_as_slot_length = Lib\Config::useServiceDurationAsSlotLength();
-        $this->show_calendar               = Lib\Config::showCalendar();
-        $this->show_blocked_slots          = Lib\Config::showBlockedTimeSlots();
-        $this->waiting_list_enabled        = $waiting_list_enabled === null ? Lib\Config::waitingListActive() && get_option( 'bookly_waiting_list_enabled' ) : $waiting_list_enabled;
-        $this->ignore_appointments         = $ignore_appointments;
+        $this->show_calendar = Lib\Config::showCalendar();
+        $this->show_blocked_slots = Lib\Config::showBlockedTimeSlots();
+        $this->waiting_list_enabled = Lib\Config::showSingleTimeSlot() ? false : ( $waiting_list_enabled === null ? Lib\Config::waitingListActive() && get_option( 'bookly_waiting_list_enabled' ) : $waiting_list_enabled );
+        $this->ignore_appointments = $ignore_appointments;
 
         // Prepare group callback.
         if ( is_callable( $callback_group ) ) {
@@ -90,6 +90,8 @@ class Finder
         // Prepare stop callback.
         if ( is_callable( $callback_stop ) ) {
             $this->callback_stop = $callback_stop;
+        } elseif ( Lib\Config::showSingleTimeSlot() ) {
+            $this->callback_stop = array( $this, '_stopOneSlot' );
         } elseif ( $this->show_calendar ) {
             $this->callback_stop = array( $this, '_stopCalendar' );
         } elseif ( Lib\Config::showDayPerColumn() ) {
@@ -120,6 +122,7 @@ class Finder
     private function _generate()
     {
         $generator = null;
+        $show_single_slot = Lib\Config::showSingleTimeSlot();
 
         /** @var Lib\ChainItem $chain_item */
         foreach ( array_reverse( $this->userData->chain->getItems() ) as $chain_item ) {
@@ -182,7 +185,6 @@ class Finder
                         } else {
                             $slot_length = (int) $slot_length;
                         }
-
                         $generator = new Generator(
                             $chain_item->getService()->getSameStaffForSubservices()
                                 ? array_intersect_key( $this->staff, array_flip( $chain_item->getStaffIds() ) )
@@ -195,12 +197,12 @@ class Finder
                             $service_id,
                             $service_duration,
                             Lib\Config::proActive() ? $sub_service->getPaddingLeft() : 0,
-                            Lib\Config::proActive() ? $sub_service->getPaddingRight(): 0,
+                            Lib\Config::proActive() ? $sub_service->getPaddingRight() : 0,
                             $chain_item->getNumberOfPersons(),
                             $extras_durations[ $key ],
                             $this->start_dp,
-                            $this->userData->getTimeFrom(),
-                            $this->userData->getTimeTo(),
+                            $show_single_slot ? null : $this->userData->getTimeFrom(),
+                            $show_single_slot ? null : $this->userData->getTimeTo(),
                             $spare_time,
                             $this->waiting_list_enabled,
                             $generator,
@@ -236,19 +238,24 @@ class Finder
 
         // Prepare break callback.
         if ( ! is_callable( $callback_break ) ) {
-            $callback_break = array( $this, '_breakDefault' );
+            if ( Lib\Config::showSingleTimeSlot() ) {
+                $callback_break = array( $this, '_breakOneSlot' );
+            } else {
+                $callback_break = array( $this, '_breakDefault' );
+            }
         }
 
         // Do search.
         $slots_count = 0;
-        $do_break    = false;
-        $weekdays    = $this->userData->getDays();
-        $generator   = $this->_generate();
+        $available_slots_count = 0;
+        $do_break = false;
+        $weekdays = $this->userData->getDays();
+        $generator = $this->_generate();
         foreach ( $generator as $slots ) {
             // Workaround for PHP < 5.5.
             $dp = $generator->key();
             // For empty slots check client end date here.
-            if ( call_user_func( $callback_break, $dp, $this->srv_duration_days, $slots_count ) ) {
+            if ( call_user_func( $callback_break, $dp, $this->srv_duration_days, $slots_count, $available_slots_count ) ) {
                 break;
             }
             foreach ( $slots->all() as $slot ) {
@@ -273,7 +280,7 @@ class Finder
 
                 // Decide when to stop.
                 if ( ! isset ( $this->slots[ $group ] ) ) {
-                    switch ( call_user_func( $this->callback_stop, $client_dp, count( $this->slots ), $slots_count ) ) {
+                    switch ( call_user_func( $this->callback_stop, $client_dp, count( $this->slots ), $slots_count, $available_slots_count ) ) {
                         case 0:  // Continue search.
                             break;
                         case 1:  // Immediate stop.
@@ -289,10 +296,41 @@ class Finder
                     $this->slots[ $group ][] = $slot;
 
                     ++ $slots_count;
+                    if ( $slot->notFullyBooked() ) {
+                        ++ $available_slots_count;
+                    }
                 }
             }
 
         }
+    }
+
+    /**
+     * Callback for making decision whether to stop generator loop.
+     *
+     * @param DatePoint $dp
+     * @param int $srv_duration_days
+     * @param int $slots_count
+     * @param int $available_slots_count
+     * @return bool
+     */
+    private function _stopOneSlot( DatePoint $dp, $srv_duration_days, $slots_count, $available_slots_count )
+    {
+        return $available_slots_count > 0;
+    }
+
+    /**
+     * Callback for making decision whether to stop generator loop.
+     *
+     * @param DatePoint $dp
+     * @param int $srv_duration_days
+     * @param int $slots_count
+     * @param int $available_slots_count
+     * @return int
+     */
+    private function _breakOneSlot( DatePoint $dp, $srv_duration_days, $slots_count, $available_slots_count )
+    {
+        return $available_slots_count > 0 ? 2 : $this->_breakDefault( $dp, $srv_duration_days, $slots_count );
     }
 
     /**
@@ -382,7 +420,14 @@ class Finder
         $max_end = $now->modify( Lib\Config::getMaximumAvailableDaysForBooking() . ' days midnight' );
 
         // Find start date.
-        if ( $this->last_fetched_slot ) {
+        if ( Lib\Config::showSingleTimeSlot() ) {
+            if ( $this->show_calendar ) {
+                $start_of_month = DatePoint::fromStrInClientTz( $this->selected_date )->modify( 'first day of this month midnight' );
+                $this->client_start_dp = $start_of_month->lt( $min_start->toClientTz() ) ? $min_start->toClientTz() : $start_of_month;
+            } else {
+                $this->client_start_dp = $min_start->toClientTz();
+            }
+        } elseif ( $this->last_fetched_slot ) {
             // Set start date to the next day after last fetched slot.
             $this->client_start_dp = DatePoint::fromStr( $this->last_fetched_slot[0][2] )->toClientTz()->modify( 'tomorrow' );
         } else {

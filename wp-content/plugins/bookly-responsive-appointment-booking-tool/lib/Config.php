@@ -112,6 +112,8 @@ abstract class Config
                 'service_image_url' => $service_image_url,
             );
 
+            $min_time_prior_booking = Slots\DatePoint::now()->modify( Proxy\Pro::getMinimumTimePriorBooking( $row['id'] ) )->toClientTz();
+
             $result['services'][ $row['id'] ] = array(
                 'id' => (int) $row['id'],
                 'category_id' => (int) $row['category_id'] ?: - 1,
@@ -127,6 +129,7 @@ abstract class Config
                 'type' => $row['type'],
                 'pos' => (int) $row['position'],
                 'recurrence_enabled' => (int) $row['recurrence_enabled'],
+                'min_time_prior_booking' => array( (int) $min_time_prior_booking->format( 'Y' ), (int) $min_time_prior_booking->format( 'n' ) - 1, (int) $min_time_prior_booking->format( 'j' ), ),
             );
             if ( ! $row['category_id'] && ! isset ( $result['categories'][0] ) ) {
                 $result['categories'][0] = array(
@@ -498,6 +501,16 @@ abstract class Config
     }
 
     /**
+     * Whether to show wide time slots in the time step of booking form.
+     *
+     * @return bool
+     */
+    public static function showSingleTimeSlot()
+    {
+        return (bool) get_option( 'bookly_app_show_single_slot', false );
+    }
+
+    /**
      * Whether to show days in the second step of booking form in separate columns or not.
      *
      * @return bool
@@ -677,6 +690,16 @@ abstract class Config
         }
 
         return $status;
+    }
+
+    /**
+     * Is bookly setup in progress
+     *
+     * @return bool
+     */
+    public static function setupMode()
+    {
+        return (bool) get_option( 'bookly_setup_step', false );
     }
 
     /******************************************************************************************************************

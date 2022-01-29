@@ -6,6 +6,7 @@ use Bookly\Backend\Modules\Appointments\Proxy;
 use Bookly\Lib\Entities\CustomerAppointment;
 use Bookly\Lib\Utils\Common;
 use Bookly\Lib\Utils\DateTime;
+use Bookly\Lib\Config;
 
 /** @var array $datatables */
 ?>
@@ -50,38 +51,39 @@ use Bookly\Lib\Utils\DateTime;
                     <div class="form-group">
                         <select class="form-control bookly-js-select" id="bookly-filter-staff" data-placeholder="<?php echo esc_attr( Common::getTranslatedOption( 'bookly_l10n_label_employee' ) ) ?>">
                             <?php foreach ( $staff_members as $staff ) : ?>
-                                <option value="<?php echo $staff['id'] ?>"><?php echo esc_html( $staff['full_name'] ) ?></option>
+                                <option value="<?php echo esc_attr( $staff['id'] ) ?>"><?php echo esc_html( $staff['full_name'] ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
-                        <select class="form-control <?php echo $customers === false ? 'bookly-js-select-ajax' : 'bookly-js-select' ?>" id="bookly-filter-customer"
-                                data-placeholder="<?php esc_attr_e( 'Customer', 'bookly' ) ?>" <?php echo $customers === false ? 'data-ajax--action' : 'data-action' ?>="bookly_get_customers_list">
+                        <select class="form-control <?php echo esc_attr( $customers === false ? 'bookly-js-select-ajax' : 'bookly-js-select' ) ?>" id="bookly-filter-customer"
+                                data-placeholder="<?php esc_attr_e( 'Customer', 'bookly' ) ?>" <?php echo esc_attr( $customers === false ? 'data-ajax--action' : 'data-action' ) ?>="bookly_get_customers_list">
                         <?php if ( $customers !== false ) : ?>
                             <?php foreach ( $customers as $customer_id => $customer ) : ?>
-                                <option value="<?php echo $customer_id ?>" data-search='<?php echo esc_attr( json_encode( array_values( $customer ) ) ) ?>'><?php echo esc_html( $customer['full_name'] ) ?></option>
+                                <option value="<?php echo esc_attr( $customer_id ) ?>" data-search='<?php echo esc_attr( json_encode( array_values( $customer ) ) ) ?>'><?php echo esc_html( $customer['full_name'] ) ?></option>
                             <?php endforeach ?>
                         <?php endif ?>
                         </select>
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="<?php echo Config::locationsActive() ? 'col-md-1' : 'col-md-2' ?>">
                     <div class="form-group">
                         <select class="form-control bookly-js-select" id="bookly-filter-service" data-placeholder="<?php echo esc_attr( Common::getTranslatedOption( 'bookly_l10n_label_service' ) ) ?>">
                             <option value="0"><?php esc_html_e( 'Custom', 'bookly' ) ?></option>
                             <?php foreach ( $services as $service ) : ?>
-                                <option value="<?php echo $service['id'] ?>"><?php echo esc_html( $service['title'] ) ?></option>
+                                <option value="<?php echo esc_attr( $service['id'] ) ?>"><?php echo esc_html( $service['title'] ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
                 </div>
+                <?php Proxy\Locations::renderFilter() ?>
                 <div class="col-md-1">
                     <div class="form-group">
                         <select class="form-control bookly-js-select" id="bookly-filter-status" data-placeholder="<?php esc_attr_e( 'Status', 'bookly' ) ?>">
                             <?php foreach ( CustomerAppointment::getStatuses() as $status ): ?>
-                                <option value="<?php echo $status ?>"><?php echo esc_html( CustomerAppointment::statusToString( $status ) ) ?></option>
+                                <option value="<?php echo esc_attr( $status ) ?>"><?php echo esc_html( CustomerAppointment::statusToString( $status ) ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
@@ -92,7 +94,7 @@ use Bookly\Lib\Utils\DateTime;
                 <tr>
                     <?php foreach ( $datatables['appointments']['settings']['columns'] as $column => $show ) : ?>
                         <?php if ( $show ) : ?>
-                            <th><?php echo $datatables['appointments']['titles'][ $column ] ?></th>
+                            <th><?php echo esc_html( $datatables['appointments']['titles'][ $column ] ) ?></th>
                         <?php endif ?>
                     <?php endforeach ?>
                     <th></th>

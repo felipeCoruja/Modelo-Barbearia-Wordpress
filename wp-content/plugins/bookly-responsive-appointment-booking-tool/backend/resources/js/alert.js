@@ -11,7 +11,7 @@ function booklyAlert(alert) {
     if (not_empty) {
         let $container = jQuery('#bookly-alert');
         if ($container.length === 0) {
-            $container = jQuery('<div id="bookly-alert" class="bookly-alert"></div>').appendTo('#bookly-tbs');
+            $container = jQuery('<div id="bookly-alert" class="bookly-alert" style="max-width:600px"></div>').appendTo('#bookly-tbs');
         }
         for (let type in alert) {
             alert[type].forEach(function (message) {

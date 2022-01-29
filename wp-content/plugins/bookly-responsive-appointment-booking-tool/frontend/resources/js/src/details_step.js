@@ -28,7 +28,8 @@ export default function stepDetails(params) {
                     update_details_dialog = response.update_details_dialog,
                     woocommerce = response.woocommerce,
                     customJS = response.custom_js,
-                    custom_fields_conditions = response.custom_fields_conditions || []
+                    custom_fields_conditions = response.custom_fields_conditions || [],
+                    terms_error = response.l10n.terms_error
                 ;
 
                 if (opt[params.form_id].hasOwnProperty('google_maps') && opt[params.form_id].google_maps.enabled) {
@@ -212,24 +213,25 @@ export default function stepDetails(params) {
                         $that = $(this)
                     ;
                     $.each(custom_fields_conditions, function(i, condition){
+                        let $target = $('.bookly-custom-field-row[data-id="' + condition.target + '"]');
                         if (parseInt(condition.source) === id) {
                             switch ($row.data('type')) {
                                 case 'drop-down':
                                 case 'radio-buttons':
-                                    if (($that.val() === condition.value && condition.equal === '1') || ($that.val() !== condition.value && condition.equal !== '1')) {
-                                        $('.bookly-custom-field-row[data-id="' + condition.target + '"]').show();
+                                    if ((condition.value.includes($that.val()) && condition.equal === '1') || (!condition.value.includes($that.val()) && condition.equal !== '1')) {
+                                        $target.show();
                                     } else {
-                                        $('.bookly-custom-field-row[data-id="' + condition.target + '"]').hide();
+                                        $target.hide();
                                     }
                                     break;
                                 case 'checkboxes':
+                                    let show = false;
                                     $row.find('input').each(function () {
-                                        if (($(this).prop('checked') && $(this).val() === condition.value && condition.equal === '1') || (!$(this).prop('checked') && $(this).val() === condition.value && condition.equal !== '1')) {
-                                            $('.bookly-custom-field-row[data-id="' + condition.target + '"]').show();
-                                        } else if ((!$(this).prop('checked') && $(this).val() === condition.value && condition.equal === '1') || ($(this).prop('checked') && $(this).val() === condition.value && condition.equal !== '1')) {
-                                            $('.bookly-custom-field-row[data-id="' + condition.target + '"]').hide();
+                                        if ($(this).prop('checked') && ((condition.value.includes($(this).val()) && condition.equal === '1') || (!condition.value.includes($(this).val()) && condition.equal !== '1'))) {
+                                            show = true;
                                         }
                                     });
+                                    $target.toggle(show);
                                     break;
                             }
                         }
@@ -359,359 +361,371 @@ export default function stepDetails(params) {
                 $next_btn.on('click', function(e, force_update_customer) {
                     e.preventDefault();
 
-                    var info_fields = [],
-                        custom_fields = {},
-                        checkbox_values,
-                        captcha_ids = [],
-                        ladda = laddaStart(this)
-                    ;
+                    // Terms and conditions checkbox
+                    let $terms = $('.bookly-js-terms', $container),
+                        $terms_error = $('.bookly-js-terms-error', $container);
 
-                    // Execute custom JavaScript
-                    if (customJS) {
-                        try {
-                            $.globalEval(customJS.next_button);
-                        } catch (e) {
-                            // Do nothing
-                        }
-                    }
+                    $terms_error.html('');
+                    if ($terms.length && !$terms.prop('checked')) {
+                        $terms_error.html(terms_error);
+                    } else {
 
-                    // Customer information fields.
-                    $('div.bookly-js-info-field-row', $container).each(function() {
-                        var $this = $(this);
-                        switch ($this.data('type')) {
-                            case 'text-field':
-                                info_fields.push({
-                                    id     : $this.data('id'),
-                                    value  : $this.find('input.bookly-js-info-field').val()
-                                });
-                                break;
-                            case 'textarea':
-                                info_fields.push({
-                                    id     : $this.data('id'),
-                                    value  : $this.find('textarea.bookly-js-info-field').val()
-                                });
-                                break;
-                            case 'checkboxes':
-                                checkbox_values = [];
-                                $this.find('input.bookly-js-info-field:checked').each(function () {
-                                    checkbox_values.push(this.value);
-                                });
-                                info_fields.push({
-                                    id     : $this.data('id'),
-                                    value  : checkbox_values
-                                });
-                                break;
-                            case 'radio-buttons':
-                                info_fields.push({
-                                    id     : $this.data('id'),
-                                    value  : $this.find('input.bookly-js-info-field:checked').val() || null
-                                });
-                                break;
-                            case 'drop-down':
-                                info_fields.push({
-                                    id     : $this.data('id'),
-                                    value  : $this.find('select.bookly-js-info-field').val()
-                                });
-                                break;
+                        var info_fields = [],
+                            custom_fields = {},
+                            checkbox_values,
+                            captcha_ids = [],
+                            ladda = laddaStart(this)
+                        ;
+
+                        // Execute custom JavaScript
+                        if (customJS) {
+                            try {
+                                $.globalEval(customJS.next_button);
+                            } catch (e) {
+                                // Do nothing
+                            }
                         }
-                    });
-                    // Custom fields.
-                    $('.bookly-custom-fields-container', $container).each(function () {
-                        var $cf_container = $(this),
-                            key = $cf_container.data('key'),
-                            custom_fields_data = [];
-                        $('div.bookly-custom-field-row', $cf_container).each(function () {
+
+                        // Customer information fields.
+                        $('div.bookly-js-info-field-row', $container).each(function () {
                             var $this = $(this);
                             switch ($this.data('type')) {
                                 case 'text-field':
-                                case 'file':
-                                    custom_fields_data.push({
+                                    info_fields.push({
                                         id: $this.data('id'),
-                                        value: $this.find('input.bookly-custom-field').val()
+                                        value: $this.find('input.bookly-js-info-field').val()
                                     });
                                     break;
                                 case 'textarea':
-                                    custom_fields_data.push({
+                                    info_fields.push({
                                         id: $this.data('id'),
-                                        value: $this.find('textarea.bookly-custom-field').val()
+                                        value: $this.find('textarea.bookly-js-info-field').val()
                                     });
                                     break;
                                 case 'checkboxes':
                                     checkbox_values = [];
-                                    $this.find('input.bookly-custom-field:checked').each(function () {
+                                    $this.find('input.bookly-js-info-field:checked').each(function () {
                                         checkbox_values.push(this.value);
                                     });
-                                    custom_fields_data.push({
+                                    info_fields.push({
                                         id: $this.data('id'),
                                         value: checkbox_values
                                     });
                                     break;
                                 case 'radio-buttons':
-                                    custom_fields_data.push({
+                                    info_fields.push({
                                         id: $this.data('id'),
-                                        value: $this.find('input.bookly-custom-field:checked').val() || null
+                                        value: $this.find('input.bookly-js-info-field:checked').val() || null
                                     });
                                     break;
                                 case 'drop-down':
-                                    custom_fields_data.push({
+                                    info_fields.push({
                                         id: $this.data('id'),
-                                        value: $this.find('select.bookly-custom-field').val()
+                                        value: $this.find('select.bookly-js-info-field').val()
                                     });
-                                    break;
-                                case 'number':
-                                    custom_fields_data.push({
-                                        id: $this.data('id'),
-                                        value: $this.find('input.bookly-custom-field').val()
-                                    });
-                                    break;
-                                case 'time':
-                                    custom_fields_data.push({
-                                        id: $this.data('id'),
-                                        value: $this.find('select.bookly-custom-field').val()
-                                    });
-                                    break;
-                                case 'date':
-                                    custom_fields_data.push({
-                                        id: $this.data('id'),
-                                        value: $this.find('input.bookly-custom-field').pickadate('picker').get('select', 'yyyy-mm-dd')
-                                    });
-                                    break;
-                                case 'captcha':
-                                    custom_fields_data.push({
-                                        id: $this.data('id'),
-                                        value: $this.find('input.bookly-custom-field').val()
-                                    });
-                                    captcha_ids.push($this.data('id'));
                                     break;
                             }
                         });
-                        custom_fields[key] = {custom_fields: JSON.stringify(custom_fields_data)};
-                    });
+                        // Custom fields.
+                        $('.bookly-custom-fields-container', $container).each(function () {
+                            let $cf_container = $(this),
+                                key = $cf_container.data('key'),
+                                custom_fields_data = [];
+                            $('div.bookly-custom-field-row', $cf_container).each(function () {
+                                var $this = $(this);
+                                if ($this.css('display') !== 'none') {
+                                    switch ($this.data('type')) {
+                                        case 'text-field':
+                                        case 'file':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('input.bookly-custom-field').val()
+                                            });
+                                            break;
+                                        case 'textarea':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('textarea.bookly-custom-field').val()
+                                            });
+                                            break;
+                                        case 'checkboxes':
+                                            checkbox_values = [];
+                                            $this.find('input.bookly-custom-field:checked').each(function () {
+                                                checkbox_values.push(this.value);
+                                            });
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: checkbox_values
+                                            });
+                                            break;
+                                        case 'radio-buttons':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('input.bookly-custom-field:checked').val() || null
+                                            });
+                                            break;
+                                        case 'drop-down':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('select.bookly-custom-field').val()
+                                            });
+                                            break;
+                                        case 'number':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('input.bookly-custom-field').val()
+                                            });
+                                            break;
+                                        case 'time':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('select.bookly-custom-field').val()
+                                            });
+                                            break;
+                                        case 'date':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('input.bookly-custom-field').pickadate('picker').get('select', 'yyyy-mm-dd')
+                                            });
+                                            break;
+                                        case 'captcha':
+                                            custom_fields_data.push({
+                                                id: $this.data('id'),
+                                                value: $this.find('input.bookly-custom-field').val()
+                                            });
+                                            captcha_ids.push($this.data('id'));
+                                            break;
+                                    }
+                                }
+                            });
+                            custom_fields[key] = {custom_fields: JSON.stringify(custom_fields_data)};
+                        });
 
-                    try {
-                        phone_number = intlTelInput.enabled ? $phone_field.intlTelInput('getNumber') : $phone_field.val();
-                        if (phone_number == '') {
+                        try {
+                            phone_number = intlTelInput.enabled ? $phone_field.intlTelInput('getNumber') : $phone_field.val();
+                            if (phone_number == '') {
+                                phone_number = $phone_field.val();
+                            }
+                        } catch (error) {  // In case when intlTelInput can't return phone number.
                             phone_number = $phone_field.val();
                         }
-                    } catch (error) {  // In case when intlTelInput can't return phone number.
-                        phone_number = $phone_field.val();
-                    }
-                    var data = {
-                        action: 'bookly_session_save',
-                        csrf_token: BooklyL10n.csrf_token,
-                        form_id: params.form_id,
-                        full_name: $full_name_field.val(),
-                        first_name: $first_name_field.val(),
-                        last_name: $last_name_field.val(),
-                        phone: phone_number,
-                        email: $email_field.val().trim(),
-                        email_confirm: $email_confirm_field.length === 1 ? $email_confirm_field.val().trim() : undefined,
-                        birthday: {
-                            day: $birthday_day_field.val(),
-                            month: $birthday_month_field.val(),
-                            year: $birthday_year_field.val()
-                        },
-                        country: $address_country_field.val(),
-                        state: $address_state_field.val(),
-                        postcode: $address_postcode_field.val(),
-                        city: $address_city_field.val(),
-                        street: $address_street_field.val(),
-                        street_number: $address_street_number_field.val(),
-                        additional_address: $address_additional_field.val(),
-                        address_iso: {
-                            country: $address_country_field.data('short'),
-                            state: $address_state_field.data('short'),
-                        },
-                        info_fields: info_fields,
-                        notes: $notes_field.val(),
-                        cart: custom_fields,
-                        captcha_ids: JSON.stringify(captcha_ids),
-                        force_update_customer : !update_details_dialog || force_update_customer,
-                        verification_code : $verification_code.val()
-                    };
-                    booklyAjax({
-                        type: 'POST',
-                        data: data,
-                        success: function (response) {
-                            // Error messages
-                            $errors.empty();
-                            $fields.removeClass('bookly-error');
+                        var data = {
+                            action: 'bookly_session_save',
+                            csrf_token: BooklyL10n.csrf_token,
+                            form_id: params.form_id,
+                            full_name: $full_name_field.val(),
+                            first_name: $first_name_field.val(),
+                            last_name: $last_name_field.val(),
+                            phone: phone_number,
+                            email: $email_field.val().trim(),
+                            email_confirm: $email_confirm_field.length === 1 ? $email_confirm_field.val().trim() : undefined,
+                            birthday: {
+                                day: $birthday_day_field.val(),
+                                month: $birthday_month_field.val(),
+                                year: $birthday_year_field.val()
+                            },
+                            country: $address_country_field.val(),
+                            state: $address_state_field.val(),
+                            postcode: $address_postcode_field.val(),
+                            city: $address_city_field.val(),
+                            street: $address_street_field.val(),
+                            street_number: $address_street_number_field.val(),
+                            additional_address: $address_additional_field.val(),
+                            address_iso: {
+                                country: $address_country_field.data('short'),
+                                state: $address_state_field.data('short'),
+                            },
+                            info_fields: info_fields,
+                            notes: $notes_field.val(),
+                            cart: custom_fields,
+                            captcha_ids: JSON.stringify(captcha_ids),
+                            force_update_customer: !update_details_dialog || force_update_customer,
+                            verification_code: $verification_code.val()
+                        };
+                        booklyAjax({
+                            type: 'POST',
+                            data: data,
+                            success: function (response) {
+                                // Error messages
+                                $errors.empty();
+                                $fields.removeClass('bookly-error');
 
-                            if (response.success) {
-                                if (woocommerce.enabled) {
-                                    var data = {
-                                        action: 'bookly_pro_add_to_woocommerce_cart',
-                                        csrf_token: BooklyL10n.csrf_token,
-                                        form_id: params.form_id
-                                    };
-                                    booklyAjax({
-                                        type: 'POST',
-                                        data: data,
-                                        success: function (response) {
-                                            if (response.success) {
-                                                window.location.href = woocommerce.cart_url;
-                                            } else {
-                                                ladda.stop();
-                                                stepTime({form_id: params.form_id}, opt[params.form_id].errors[response.error]);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    stepPayment({form_id: params.form_id});
-                                }
-                            } else {
-                                var $scroll_to = null;
-                                if (response.appointments_limit_reached) {
-                                    stepComplete({form_id: params.form_id, error: 'appointments_limit_reached'});
-                                } else if (response.hasOwnProperty('verify')) {
-                                    ladda.stop();
-                                    $verification_modal
-                                    .find('#bookly-verification-code-text').html(response.verify_text).end()
-                                    .addClass('bookly-in');
-                                } else if (response.group_skip_payment) {
-                                    booklyAjax({
-                                        type: 'POST',
-                                        data: { action : 'bookly_save_appointment', csrf_token : BooklyL10n.csrf_token, form_id : params.form_id },
-                                        success: function (response) {
-                                            stepComplete({form_id: params.form_id, error: 'group_skip_payment'});
-                                        }
-                                    });
-                                } else {
-                                    ladda.stop();
-
-                                    var invalidClass = 'bookly-error',
-                                        validateFields = [
-                                            {
-                                                name: 'full_name',
-                                                errorElement: $name_error,
-                                                formElement: $full_name_field
-                                            },
-                                            {
-                                                name: 'first_name',
-                                                errorElement: $first_name_error,
-                                                formElement: $first_name_field
-                                            },
-                                            {
-                                                name: 'last_name',
-                                                errorElement: $last_name_error,
-                                                formElement: $last_name_field
-                                            },
-                                            {
-                                                name: 'phone',
-                                                errorElement: $phone_error,
-                                                formElement: $phone_field
-                                            },
-                                            {
-                                                name: 'email',
-                                                errorElement: $email_error,
-                                                formElement: $email_field
-                                            },
-                                            {
-                                                name: 'email_confirm',
-                                                errorElement: $email_confirm_error,
-                                                formElement: $email_confirm_field
-                                            },
-                                            {
-                                                name: 'birthday_day',
-                                                errorElement: $birthday_day_error,
-                                                formElement: $birthday_day_field
-                                            },
-                                            {
-                                                name: 'birthday_month',
-                                                errorElement: $birthday_month_error,
-                                                formElement: $birthday_month_field
-                                            },
-                                            {
-                                                name: 'birthday_year',
-                                                errorElement: $birthday_year_error,
-                                                formElement: $birthday_year_field
-                                            },
-                                            {
-                                                name: 'country',
-                                                errorElement: $address_country_error,
-                                                formElement: $address_country_field
-                                            },
-                                            {
-                                                name: 'state',
-                                                errorElement: $address_state_error,
-                                                formElement: $address_state_field
-                                            },
-                                            {
-                                                name: 'postcode',
-                                                errorElement: $address_postcode_error,
-                                                formElement: $address_postcode_field
-                                            },
-                                            {
-                                                name: 'city',
-                                                errorElement: $address_city_error,
-                                                formElement: $address_city_field
-                                            },
-                                            {
-                                                name: 'street',
-                                                errorElement: $address_street_error,
-                                                formElement: $address_street_field
-                                            },
-                                            {
-                                                name: 'street_number',
-                                                errorElement: $address_street_number_error,
-                                                formElement: $address_street_number_field
-                                            },
-                                            {
-                                                name: 'additional_address',
-                                                errorElement: $address_additional_error,
-                                                formElement: $address_additional_field
-                                            }
-                                        ];
-
-                                    validateFields.forEach(function(field) {
-                                        if (!response[field.name]) {
-                                            return;
-                                        }
-
-                                        field.errorElement.html(response[field.name]);
-                                        field.formElement.addClass(invalidClass);
-
-                                        if ($scroll_to === null) {
-                                            $scroll_to = field.formElement;
-                                        }
-                                    });
-
-                                    if (response.info_fields) {
-                                        $.each(response.info_fields, function (field_id, message) {
-                                            var $div = $('div.bookly-js-info-field-row[data-id="' + field_id + '"]', $container);
-                                            $div.find('.bookly-js-info-field-error').html(message);
-                                            $div.find('.bookly-js-info-field').addClass('bookly-error');
-                                            if ($scroll_to === null) {
-                                                $scroll_to = $div.find('.bookly-js-info-field');
+                                if (response.success) {
+                                    if (woocommerce.enabled) {
+                                        var data = {
+                                            action: 'bookly_pro_add_to_woocommerce_cart',
+                                            csrf_token: BooklyL10n.csrf_token,
+                                            form_id: params.form_id
+                                        };
+                                        booklyAjax({
+                                            type: 'POST',
+                                            data: data,
+                                            success: function (response) {
+                                                if (response.success) {
+                                                    window.location.href = woocommerce.cart_url;
+                                                } else {
+                                                    ladda.stop();
+                                                    stepTime({form_id: params.form_id}, opt[params.form_id].errors[response.error]);
+                                                }
                                             }
                                         });
+                                    } else {
+                                        stepPayment({form_id: params.form_id});
                                     }
-                                    if (response.custom_fields) {
-                                        $.each(response.custom_fields, function (key, fields) {
-                                            $.each(fields, function (field_id, message) {
-                                                var $custom_fields_collector = $('.bookly-custom-fields-container[data-key="' + key + '"]', $container);
-                                                var $div = $('[data-id="' + field_id + '"]', $custom_fields_collector);
-                                                $div.find('.bookly-custom-field-error').html(message);
-                                                $div.find('.bookly-custom-field').addClass('bookly-error');
+                                } else {
+                                    var $scroll_to = null;
+                                    if (response.appointments_limit_reached) {
+                                        stepComplete({form_id: params.form_id, error: 'appointments_limit_reached'});
+                                    } else if (response.hasOwnProperty('verify')) {
+                                        ladda.stop();
+                                        $verification_modal
+                                        .find('#bookly-verification-code-text').html(response.verify_text).end()
+                                        .addClass('bookly-in');
+                                    } else if (response.group_skip_payment) {
+                                        booklyAjax({
+                                            type: 'POST',
+                                            data: {action: 'bookly_save_appointment', csrf_token: BooklyL10n.csrf_token, form_id: params.form_id},
+                                            success: function (response) {
+                                                stepComplete({form_id: params.form_id, error: 'group_skip_payment'});
+                                            }
+                                        });
+                                    } else {
+                                        ladda.stop();
+
+                                        var invalidClass = 'bookly-error',
+                                            validateFields = [
+                                                {
+                                                    name: 'full_name',
+                                                    errorElement: $name_error,
+                                                    formElement: $full_name_field
+                                                },
+                                                {
+                                                    name: 'first_name',
+                                                    errorElement: $first_name_error,
+                                                    formElement: $first_name_field
+                                                },
+                                                {
+                                                    name: 'last_name',
+                                                    errorElement: $last_name_error,
+                                                    formElement: $last_name_field
+                                                },
+                                                {
+                                                    name: 'phone',
+                                                    errorElement: $phone_error,
+                                                    formElement: $phone_field
+                                                },
+                                                {
+                                                    name: 'email',
+                                                    errorElement: $email_error,
+                                                    formElement: $email_field
+                                                },
+                                                {
+                                                    name: 'email_confirm',
+                                                    errorElement: $email_confirm_error,
+                                                    formElement: $email_confirm_field
+                                                },
+                                                {
+                                                    name: 'birthday_day',
+                                                    errorElement: $birthday_day_error,
+                                                    formElement: $birthday_day_field
+                                                },
+                                                {
+                                                    name: 'birthday_month',
+                                                    errorElement: $birthday_month_error,
+                                                    formElement: $birthday_month_field
+                                                },
+                                                {
+                                                    name: 'birthday_year',
+                                                    errorElement: $birthday_year_error,
+                                                    formElement: $birthday_year_field
+                                                },
+                                                {
+                                                    name: 'country',
+                                                    errorElement: $address_country_error,
+                                                    formElement: $address_country_field
+                                                },
+                                                {
+                                                    name: 'state',
+                                                    errorElement: $address_state_error,
+                                                    formElement: $address_state_field
+                                                },
+                                                {
+                                                    name: 'postcode',
+                                                    errorElement: $address_postcode_error,
+                                                    formElement: $address_postcode_field
+                                                },
+                                                {
+                                                    name: 'city',
+                                                    errorElement: $address_city_error,
+                                                    formElement: $address_city_field
+                                                },
+                                                {
+                                                    name: 'street',
+                                                    errorElement: $address_street_error,
+                                                    formElement: $address_street_field
+                                                },
+                                                {
+                                                    name: 'street_number',
+                                                    errorElement: $address_street_number_error,
+                                                    formElement: $address_street_number_field
+                                                },
+                                                {
+                                                    name: 'additional_address',
+                                                    errorElement: $address_additional_error,
+                                                    formElement: $address_additional_field
+                                                }
+                                            ];
+
+                                        validateFields.forEach(function (field) {
+                                            if (!response[field.name]) {
+                                                return;
+                                            }
+
+                                            field.errorElement.html(response[field.name]);
+                                            field.formElement.addClass(invalidClass);
+
+                                            if ($scroll_to === null) {
+                                                $scroll_to = field.formElement;
+                                            }
+                                        });
+
+                                        if (response.info_fields) {
+                                            $.each(response.info_fields, function (field_id, message) {
+                                                var $div = $('div.bookly-js-info-field-row[data-id="' + field_id + '"]', $container);
+                                                $div.find('.bookly-js-info-field-error').html(message);
+                                                $div.find('.bookly-js-info-field').addClass('bookly-error');
                                                 if ($scroll_to === null) {
-                                                    $scroll_to = $div.find('.bookly-custom-field');
+                                                    $scroll_to = $div.find('.bookly-js-info-field');
                                                 }
                                             });
-                                        });
-                                    }
-                                    if (response.customer) {
-                                        $cst_modal
+                                        }
+                                        if (response.custom_fields) {
+                                            $.each(response.custom_fields, function (key, fields) {
+                                                $.each(fields, function (field_id, message) {
+                                                    var $custom_fields_collector = $('.bookly-custom-fields-container[data-key="' + key + '"]', $container);
+                                                    var $div = $('[data-id="' + field_id + '"]', $custom_fields_collector);
+                                                    $div.find('.bookly-custom-field-error').html(message);
+                                                    $div.find('.bookly-custom-field').addClass('bookly-error');
+                                                    if ($scroll_to === null) {
+                                                        $scroll_to = $div.find('.bookly-custom-field');
+                                                    }
+                                                });
+                                            });
+                                        }
+                                        if (response.customer) {
+                                            $cst_modal
                                             .find('.bookly-js-modal-body').html(response.customer).end()
                                             .addClass('bookly-in')
-                                        ;
+                                            ;
+                                        }
+                                    }
+                                    if ($scroll_to !== null) {
+                                        scrollTo($scroll_to, params.form_id);
                                     }
                                 }
-                                if ($scroll_to !== null) {
-                                    scrollTo($scroll_to, params.form_id);
-                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
 
                 $('.bookly-js-back-step', $container).on('click', function (e) {

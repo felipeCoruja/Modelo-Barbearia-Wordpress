@@ -7,19 +7,19 @@ use Bookly\Lib\Entities\Service;
  * @var array $service_collection
  * @var array $staff_dropdown_data
  */
-$service_id         = $service['id'];
+$service_id = $service['id'];
 $assigned_staff_ids = $service['staff_ids'] ? explode( ',', $service['staff_ids'] ) : array();
 ?>
 <div class="bookly-js-service-general-container">
-    <input type="hidden" name="attachment_id" value="<?php echo $service['attachment_id'] ?>">
+    <input type="hidden" name="attachment_id" value="<?php echo esc_attr( $service['attachment_id'] ) ?>">
     <div class="row">
         <div class="col-md-auto">
             <div id="bookly-js-service-image">
                 <div class="form-group">
                     <?php $img = wp_get_attachment_image_src( $service['attachment_id'], 'thumbnail' ) ?>
 
-                    <div class="bookly-js-image bookly-thumb<?php echo $img ? ' bookly-thumb-with-image' : '' ?>"
-                        <?php echo $img ? 'style="background-image: url(' . $img[0] . '); background-size: cover;"' : '' ?>
+                    <div class="bookly-js-image bookly-thumb<?php echo esc_attr( $img ? ' bookly-thumb-with-image' : '' ) ?>"
+                         style="<?php echo esc_attr( $img ? 'background-image: url(' . $img[0] . '); background-size: cover;' : '' ) ?>"
                     >
                         <i class="fas fa-fw fa-4x fa-camera mt-2 text-white w-100"></i>
                         <a class="far fa-fw fa-trash-alt text-danger bookly-thumb-delete bookly-js-delete"
@@ -49,7 +49,7 @@ $assigned_staff_ids = $service['staff_ids'] ? explode( ',', $service['staff_ids'
             <select id="bookly-service-category" class="form-control custom-select" name="category_id">
                 <option value="0"><?php esc_html_e( 'Uncategorized', 'bookly' ) ?></option>
                 <?php foreach ( $categories_collection as $category ) : ?>
-                    <option value="<?php echo $category['id'] ?>" <?php selected( $category['id'], $service['category_id'] ) ?>><?php echo esc_html( $category['name'] ) ?></option>
+                    <option value="<?php echo esc_attr( $category['id'] ) ?>" <?php selected( $category['id'], $service['category_id'] ) ?>><?php echo esc_html( $category['name'] ) ?></option>
                 <?php endforeach ?>
             </select>
         </div>
@@ -95,9 +95,9 @@ $assigned_staff_ids = $service['staff_ids'] ? explode( ',', $service['staff_ids'
                             <ul>
                                 <?php foreach ( $category['items'] as $staff ) : ?>
                                     <li
-                                        data-input-name="staff_ids[]"
-                                        data-value="<?php echo $staff['id'] ?>"
-                                        data-selected="<?php echo (int) in_array( $staff['id'], $assigned_staff_ids ) ?>"
+                                            data-input-name="staff_ids[]"
+                                            data-value="<?php echo esc_attr( $staff['id'] ) ?>"
+                                            data-selected="<?php echo (int) in_array( $staff['id'], $assigned_staff_ids ) ?>"
                                     >
                                         <?php echo esc_html( $staff['full_name'] ) ?>
                                     </li>

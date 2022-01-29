@@ -25,10 +25,9 @@ class Page extends Lib\Base\Ajax
             'wp' => array( 'wp-color-picker' ),
             'backend' => array(
                 'js/range-tools.js' => array( 'bookly-backend-globals' ),
-                'js/select2.min.js' => array( 'bookly-range-tools.js' ),
                 'js/sortable.min.js',
             ),
-            'module' => array( 'js/services-list.js' => array( 'bookly-select2.min.js' ) ),
+            'module' => array( 'js/services-list.js' => array( 'bookly-range-tools.js' ) ),
         ) );
 
         $staff = array();
@@ -64,6 +63,7 @@ class Page extends Lib\Base\Ajax
         ) );
 
         foreach ( $services as &$service ) {
+            $service['title'] = esc_html( $service['title'] );
             $service['colors'] = Proxy\Shared::prepareServiceColors( array_fill( 0, 3, $service['color'] ), $service['id'], $service['type'] );
             $service['sub_services'] = Lib\Entities\SubService::query()
                 ->where( 'service_id', $service['id'] )

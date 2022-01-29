@@ -128,7 +128,7 @@ class Elements extends Lib\Base\Component
             return $html;
         }
 
-        echo $html;
+        echo Lib\Utils\Common::stripScripts( $html );
     }
 
     /**
@@ -151,9 +151,10 @@ class Elements extends Lib\Base\Component
         ) );
 
         wp_localize_script( 'bookly-editable.js', 'BooklyL10nEditable', array(
-            'edit' => __( 'Edit', 'bookly' ),
-            'empty' => __( 'Empty', 'bookly' ),
-            'enter_a_content' => __( 'Enter a content', 'bookly' ),
+            'edit' => esc_html__( 'Edit', 'bookly' ),
+            'empty' => esc_html__( 'Empty', 'bookly' ),
+            'enter_a_content' => esc_html__( 'Enter a content', 'bookly' ),
+            'script_is_used' => esc_html__( 'WARNING', 'bookly' ) . "\n\n" . esc_html__( 'Using <script> tag can be dangerous.', 'bookly' ) . "\n\n" . esc_html__( 'Unless you understand exactly what you are doing, click Cancel and stay safe.', 'bookly' )
         ) );
 
         self::renderTemplate( 'ace-modal', compact( 'doc_slug' ) );

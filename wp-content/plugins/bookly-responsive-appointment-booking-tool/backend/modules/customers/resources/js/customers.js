@@ -42,6 +42,14 @@ jQuery(function($) {
                         }
                     });
                     break;
+                case 'birthday': {
+                    columns.push({data: 'birthday',
+                        render: function (data, type, row, meta) {
+                            return row.birthday_formatted;
+                        }
+                    });
+                    break;
+                }
                 default:
                     if (column.startsWith('info_fields_')) {
                         const id = parseInt(column.split('_').pop());
@@ -71,23 +79,23 @@ jQuery(function($) {
      * Init DataTables.
      */
     var dt = $customersList.DataTable({
-        order       : order,
-        info        : false,
-        searching   : false,
+        order: order,
+        info: false,
+        searching: false,
         lengthChange: false,
-        pageLength  : 25,
-        pagingType  : 'numbers',
-        processing  : true,
-        responsive  : true,
-        serverSide  : true,
-        ajax        : {
-            url : ajaxurl,
+        pageLength: 25,
+        pagingType: 'numbers',
+        processing: true,
+        responsive: true,
+        serverSide: true,
+        ajax: {
+            url: ajaxurl,
             type: 'POST',
             data: function (d) {
                 return $.extend({}, d, {
-                    action    : 'bookly_get_customers',
-                    csrf_token: BooklyL10n.csrfToken,
-                    filter    : $filter.val()
+                    action: 'bookly_get_customers',
+                    csrf_token: BooklyL10nGlobal.csrf_token,
+                    filter: $filter.val()
                 });
             }
         },
@@ -217,16 +225,16 @@ jQuery(function($) {
             ids.push(this.data().id);
         });
         $.ajax({
-            url  : ajaxurl,
-            type : 'POST',
-            data : {
-                action     : 'bookly_merge_customers',
-                csrf_token : BooklyL10n.csrfToken,
-                target_id  : $customersList.find('tbody input:checked').val(),
-                ids        : ids
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'bookly_merge_customers',
+                csrf_token: BooklyL10nGlobal.csrf_token,
+                target_id: $customersList.find('tbody input:checked').val(),
+                ids: ids
             },
-            dataType : 'json',
-            success  : function(response) {
+            dataType: 'json',
+            success: function (response) {
                 ladda.stop();
                 $mergeDialog.booklyModal('hide');
                 if (response.success) {

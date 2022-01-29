@@ -34,10 +34,13 @@ class API {
 		return static::$_instance;
 	}
 
+	private static $query = null;
+
 	/**
 	 * Will Invoked When The API Instanciated.
 	 */
 	public function __construct() {
+		self::$query = Query::instance();
 		Loader::add_action( 'wp_ajax_get_templately', $this, 'get_templately' );
 	}
 	/**
@@ -48,7 +51,7 @@ class API {
 			isset( $template['type'] ) &&
 			! in_array( $template['type'], $types, true ) ) {
 			Helper::send_error( [
-				'message' => 'You have to install/activate <a href="http://wpdeveloper.net/go/elementor" target="_blank">Elementor PRO</a> to import ' . ucwords($template['type']) . ' Blocks.',
+				'message' => 'You have to install/activate <a href="https://wpdeveloper.com/go/elementor" target="_blank">Elementor PRO</a> to import ' . ucwords($template['type']) . ' Blocks.',
 				'type' => 'html'
 			] );
 		}
@@ -301,10 +304,20 @@ class API {
 					'starter' => '3',
 					'pro' => '0',
 				],
+				'pages' => [
+					'total' => '3',
+					'starter' => '3',
+					'pro' => '0',
+				],
+				'packs' => [
+					'total' => '3',
+					'starter' => '3',
+					'pro' => '0',
+				],
 			]
 		];
 
-		$data  = Query::get( '{ getCounts{ key, value } }' );
+		$data  = self::$query->get( '{ getCounts{ key, value } }' );
 		if ( is_wp_error( $data ) ) {
 			DB::set_transient('templately_item_counts', $defaults );
 			return $defaults;
@@ -316,31 +329,31 @@ class API {
 				'pages' => [],
 				'packs' => [],
 			];
-			array_walk( $data['data']['getCounts'], function( $item ) use ( &$new_array ) {
-				$new_key = explode('-', $item['key']);
-				if( count( $new_key ) === 2 ) {
-					if( isset( $new_array[ $new_key[1] ] )) {
-						$new_array[ $new_key[1] ] = array_merge( $new_array[ $new_key[1] ], [  $new_key[0] => $item['value'] ] );
-						$temp_array = $new_array[ $new_key[1] ];
-						unset( $temp_array['total'] );
-						$new_array[ $new_key[1] ]['total'] = array_sum( $temp_array );
-					}
+
+			$_new_data = [];
+
+			array_walk( $data['data']['getCounts'], function( $item ) use ( &$new_array, &$_new_data ) {
+				if( in_array( $item['key'] , ['elementor', 'gutenberg'], true ) ) {
+					$values = json_decode($item['value'], true);
+
+					array_walk( $values, function( $_item ) use ( &$new_array ) {
+						$new_key = explode('-', $_item['key']);
+						if( count( $new_key ) === 2 ) {
+							if( isset( $new_array[ $new_key[1] ] )) {
+								$new_array[ $new_key[1] ] = array_merge( $new_array[ $new_key[1] ], [  $new_key[0] => $_item['value'] ] );
+								$temp_array = $new_array[ $new_key[1] ];
+								unset( $temp_array['total'] );
+								$new_array[ $new_key[1] ]['total'] = array_sum( $temp_array );
+							}
+						}
+					});
+
+					$_new_data[ $item['key'] ] = $new_array;
 				}
 			});
 
-			$data = [
-				'elementor' => $new_array,
-				'gutenberg' => [
-					'blocks' => [
-						'total' => '3',
-						'starter' => '3',
-						'pro' => '0',
-					],
-				]
-			];
-
-			DB::set_transient('templately_item_counts', $data);
-			return $data;
+			DB::set_transient('templately_item_counts', $_new_data);
+			return $_new_data;
 		}
 	}
 	/**
@@ -353,7 +366,7 @@ class API {
 			return $categories;
 		}
 		$query = '{ groupedCategories { item_categories { id, name, parent }, page_categories{ id, name, parent }, pack_categories{ id, name, parent } } }';
-		$data  = Query::get( $query );
+		$data  = self::$query->get( $query );
 		if ( is_wp_error( $data ) ) {
 			return [];
 		}
@@ -402,7 +415,7 @@ class API {
 			return $dependencies;
 		}
 		$query = '{ dependencies{ id, name, icon, is_pro, platform } }';
-		$data  = Query::get( $query );
+		$data  = self::$query->get( $query );
 		if ( is_wp_error( $data ) ) {
 			Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 		}
@@ -463,7 +476,7 @@ class API {
 			( $type === 'packs' ) ? '' : 'dependencies{ id, name, slug, icon, is_pro, link, plugin_file, plugin_original_slug },'
 		);
 
-		$data = Query::get( $query );
+		$data = self::$query->get( $query );
 		if ( is_wp_error( $data ) ) {
 			Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 		}
@@ -506,7 +519,7 @@ class API {
 			! empty( $tag_id ) ?  "tag_id: $tag_id" : ''
 		);
 
-		$data = Query::get( $query );
+		$data = self::$query->get( $query );
 		if ( is_wp_error( $data ) ) {
 			Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 		}
@@ -559,7 +572,7 @@ class API {
 			if ( $origin === 'cloud' ) {
 				$query = '{ myCloudInsert( file_id: ' . $id . ', api_key: "' . $api_key . '", file_type: "' . $item_type . '" ) }';
 			}
-			$data = Query::get( $query );
+			$data = self::$query->get( $query );
 			if ( is_wp_error( $data ) ) {
 				Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 			}
@@ -604,7 +617,7 @@ class API {
 		 * Item will come from local WP Installation.
 		 */
 		if ( $origin === 'local' ) {
-			$data = Query::getFromLibrary( $id );
+			$data = self::$query->getFromLibrary( $id );
 			if ( isset( $data['content'] ) ) {
 				return $data;
 			}
@@ -674,7 +687,7 @@ class API {
 			$data, JSON_UNESCAPED_LINE_TERMINATORS | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE
 		) );
 
-		$response = Query::push( $name, $data, $api_key, $item_type, $args );
+		$response = self::$query->push( $name, $data, $api_key, $item_type, $args );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -715,7 +728,7 @@ class API {
 			if ( $id === null ) {
 				Helper::send_error( __( 'ID not found to push the item in cloud.', 'templately' ) );
 			}
-			$data = Query::getFromLibrary( $id );
+			$data = self::$query->getFromLibrary( $id );
 
 			if ( ! empty( $data ) && isset( $data['content'] ) ) {
 				$name       = \get_the_title( $id );
@@ -752,7 +765,7 @@ class API {
 		}
 
 		$from     = isset( $_POST['remove_from'] ) && ! empty( $_POST['remove_from'] ) ? trim( $_POST['remove_from'] ) : 'cloud';
-		$response = Query::remove_cloud_item( $id, $api_key, $from );
+		$response = self::$query->remove_cloud_item( $id, $api_key, $from );
 
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
@@ -819,7 +832,8 @@ class API {
 		$dependencies           = json_decode( wp_unslash( $_POST['dependency'] ) );
 		$not_active_plugin_list = [];
 		$all_plugins            = Helper::get_plugins();
-		if ( ! \is_plugin_active( 'elementor/elementor.php' ) ) {
+		$platform = isset( $_POST['platform'] ) ? trim( $_POST['platform'] ) : 'elementor';
+		if ( ! \is_plugin_active( 'elementor/elementor.php' ) && $platform === 'elementor' ) {
 			$elementor_plugin              = new \stdClass();
 			$elementor_plugin->name        = __( 'Elementor', 'templately' );
 			$elementor_plugin->plugin_file = 'elementor/elementor.php';
@@ -883,7 +897,7 @@ class API {
 			$query = '{ pages( slug: "' . $slug . '" ) { data { slug, type, rating, downloads, dependencies{ id, icon, name, slug, is_pro, link, plugin_file, plugin_original_slug }, live_url, name, id, retina_ready, documentation_ready, features, favourite_count, thumbnail, price,  pack{ name, slug }, author{ display_name, name, joined, profile_photo }, tags{ name, id }, category{ name, id } } } }';
 		}
 
-		$data = Query::get( $query );
+		$data = self::$query->get( $query );
 		if ( \is_wp_error( $data ) ) {
 			Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 		}
@@ -916,7 +930,7 @@ class API {
 		}
 
 		$query = '{ tags { id, name } }';
-		$data  = Query::get( $query );
+		$data  = self::$query->get( $query );
 
 		if ( \is_wp_error( $data ) ) {
 			Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
@@ -1072,7 +1086,7 @@ class API {
 				$errors['password'] = __( 'Password Field Cannot be Empty.', 'templately' );
 			}
 			$query = \sprintf(
-				'mutation{ connect( email : "%s", password : "%s", site_url : "%s", ip: "%s" ){ status, message, user { id, first_name, last_name, name, plan, plan_expire_at, profile_photo, is_verified, api_key, email, favourites { id, type }, joined, my_cloud { limit, usages, name, last_pushed, files{ data { id, name, thumbnail, medium_thumbnail, preview }, current_page, total_page }}}}}',
+				'mutation{ connect( email : "%s", password : "%s", site_url : "%s", ip: "%s" ){ status, message, user { id, first_name, last_name, name, plan, plan_expire_at, profile_photo, is_verified, api_key, email, favourites { id, type }, joined, my_cloud { limit, usages, name, last_pushed, files{ data { id, name }, current_page, total_page }}}}}',
 				$email,
 				$password,
 				\home_url( '/' ),
@@ -1081,12 +1095,13 @@ class API {
 		}
 
 
-		$api_response = Query::get( $query );
+		$api_response = self::$query->get( $query );
 
 		if ( is_wp_error( $api_response ) ) {
 			Helper::send_error( $api_response->get_error_code() . ': ' . $api_response->get_error_message() );
 		}
 		if ( isset( $api_response['errors'] ) ) {
+			print_r($api_response['errors']);
 			Helper::send_error( __( 'Something went wrong. Maybe Invalid Credentials.', 'templately' ) );
 		}
 		if ( $withApi ) {
@@ -1148,7 +1163,7 @@ class API {
 			\home_url( '/' ),
 			self::get_ip()
 		);
-		$api_response = Query::get( $query );
+		$api_response = self::$query->get( $query );
 		if ( is_wp_error( $api_response ) ) {
 			Helper::send_error( $api_response->get_error_code() . ': ' . $api_response->get_error_message() );
 		}
@@ -1317,7 +1332,7 @@ class API {
 				$file_type,
 				! empty( $search ) ? ', files_search: "' . $search . '"' : ''
 			);
-			$data  = Query::get( $query );
+			$data  = self::$query->get( $query );
 			if ( is_wp_error( $data ) ) {
 				Helper::send_error( $data->get_error_code() . ': ' . $data->get_error_message() );
 			}
@@ -1371,7 +1386,7 @@ class API {
 		$data = DB::get_user_specific_login_meta( '_templately_connect_data', [] );
 		$api_key = DB::get_user_specific_login_meta( '_templately_api_key' );
 		$query = \sprintf('{ isVerifiedUser( api_key: "%s" ) }', $api_key);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 
 		if( is_wp_error($response) ){
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
@@ -1387,7 +1402,6 @@ class API {
 
 	protected function install_requirements() {
 		$requirements = isset( $_POST['requirements'] ) ? \json_decode( \wp_unslash( $_POST['requirements'] ), true ) : false;
-
 		return RequirementInstaller::get_instance()->install_plugin( $requirements );
 		die;
 	}
@@ -1439,7 +1453,7 @@ class API {
 		if ( $unfav ) {
 			$query = 'mutation { unFavourite( type_id: ' . $id . ', api_key: "' . $api_key . '", type: "' . $type . '" ) }';
 		}
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1504,7 +1518,7 @@ class API {
 			$file_type,
 			$pagenum !== - 1 ? ', sharedWith{ name, email, profile_photo, id }, owner{ id, name, joined, display_name }, pending_invitations' : ''
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1537,7 +1551,7 @@ class API {
 			$title,
 			$share_with
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1584,7 +1598,7 @@ class API {
 				! empty( $remove ) ? ', remove: "' . $remove . '"' : ''
 			);
 		}
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1615,7 +1629,7 @@ class API {
 			$api_key,
 			$withFiles ? ', delete_files: true' : ''
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1646,7 +1660,7 @@ class API {
 			$workspace_id,
 			$action
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1681,7 +1695,7 @@ class API {
 			$file_type,
 			! empty( $search ) ? ', files_search: "' . $search . '"' : ''
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1705,7 +1719,7 @@ class API {
 			'{ myCloudUsage( api_key: "%s" ){ data, status } }',
 			$api_key
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}
@@ -1735,7 +1749,7 @@ class API {
 			$workspace_id,
 			\json_encode( $files )
 		);
-		$response = Query::get( $query );
+		$response = self::$query->get( $query );
 		if ( is_wp_error( $response ) ) {
 			Helper::send_error( $response->get_error_code() . ': ' . $response->get_error_message() );
 		}

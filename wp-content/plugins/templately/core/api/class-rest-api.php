@@ -27,7 +27,9 @@ class REST {
     /**
      * Initially Invoked
      */
+    private static $query = null;
     public function __construct(){
+        self::$query = Query::instance();
         \add_action( 'rest_api_init', [ $this, 'register_routes' ] );
     }
     /**
@@ -101,8 +103,8 @@ class REST {
         }
 
         $api_key = DB::get_user_specific_login_meta( '_templately_api_key' );
-        $response = Query::get(
-            Query::prepare(
+        $response = self::$query->get(
+            self::$query->prepare(
                 'mutation { myFavouriteItem( api_key: "%s", type: "%s", plan_type: %d, per_page: 8, page: %d ){ total_page, current_page, data { id, name, rating, type, slug, favourite_count, thumbnail, price, author{ display_name, name, joined }, category{ id, name } } } }',
                 $api_key, $type, $plan_type, $page
             ),
@@ -121,8 +123,8 @@ class REST {
             $page = $request->get_param('page');
         }
         $api_key = DB::get_user_specific_login_meta( '_templately_api_key' );
-        $response = Query::get(
-            Query::prepare(
+        $response = self::$query->get(
+            self::$query->prepare(
                 'mutation { myDownloadHistory( api_key: "%s", per_page: 10, page: %s ){ data{ name, thumbnail, downloaded_at, slug, type }, current_page, total_page } }',
                 $api_key,
                 $page
@@ -154,8 +156,8 @@ class REST {
             if( empty( $api_key ) ) {
                 return $this->error('api');
             }
-            $response = Query::get(
-                Query::prepare(
+            $response = self::$query->get(
+                self::$query->prepare(
                     'mutation { downloadMyCloudItem( api_key: "%s", id: %d ){ file, status, message, file_name, file_type } }',
                     $api_key, +$id
                 ),

@@ -119,7 +119,9 @@ class Ajax extends Lib\Base\Ajax
             self::$staff->save();
 
             Proxy\Shared::updateStaffDetails( self::$staff, $params );
-            wp_send_json_success( array( 'staff' => self::$staff->getFields() ) );
+            $staff = self::$staff->getFields();
+            $staff['full_name'] = esc_html( $staff['full_name'] );
+            wp_send_json_success( array( 'staff' => $staff ) );
         } else {
             wp_send_json_error( $data['alerts'] );
         }

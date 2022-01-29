@@ -32,9 +32,16 @@ class Dialog extends Lib\Base\Component
         if ( ! Lib\Utils\Common::isCurrentUserAdmin() ) {
             $query->where( 's.wp_user_id', get_current_user_id() );
         }
+        $staff = array();
+        foreach ( $query->sortBy( 'position' )->fetchArray() as $_staff ) {
+            $staff[] = array(
+                'id' => $_staff['id'],
+                'full_name' => esc_html( $_staff['full_name'] ),
+            );
+        }
 
         wp_localize_script( 'bookly-staff-order-dialog.js', 'BooklyStaffOrderDialogL10n', array(
-            'staff' => $query->sortBy( 'position' )->fetchArray()
+            'staff' => $staff,
         ) );
 
         self::renderTemplate( 'dialog' );

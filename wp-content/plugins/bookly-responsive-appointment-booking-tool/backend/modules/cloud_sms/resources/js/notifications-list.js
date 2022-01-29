@@ -35,7 +35,7 @@ jQuery(function ($) {
                         });
                         break;
                     default:
-                        columns.push({data: column});
+                        columns.push({data: column, render: $.fn.dataTable.render.text()});
                         break;
                 }
             }

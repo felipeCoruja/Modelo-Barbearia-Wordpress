@@ -11,7 +11,7 @@
     <p><?php echo nl2br( esc_html( $msg ) ) ?></p>
     <ol>
         <?php foreach ( $plugins as $plugin ): ?>
-            <li><?php echo $plugin::getTitle() ?> v<?php echo $plugin::getVersion() ?>: <b><?php echo $plugin::getPurchaseCode() ?></b></li>
+            <li><?php echo esc_html( $plugin::getTitle() ) ?> v<?php echo esc_html( $plugin::getVersion() ) ?>: <b><?php echo esc_html( $plugin::getPurchaseCode() ) ?></b></li>
         <?php endforeach ?>
     </ol>
     <p><?php echo esc_html( $_SERVER['HTTP_REFERER'] ) ?></p>

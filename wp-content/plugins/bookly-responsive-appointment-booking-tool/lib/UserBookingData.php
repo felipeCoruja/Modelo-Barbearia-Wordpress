@@ -72,6 +72,8 @@ class UserBookingData
     protected $coupon_code;
     /** @var bool */
     protected $deposit_full = 0;
+    /** @var float */
+    protected $tips;
 
     // Cart item keys being edited
     /** @var array */
@@ -80,6 +82,9 @@ class UserBookingData
     protected $repeated = 0;
     /** @var array */
     protected $repeat_data = array();
+
+    /** @var string */
+    protected $order_id;
 
     // Verification code
     /** @var string */
@@ -126,6 +131,7 @@ class UserBookingData
         'info_fields',
         // Step payment
         'coupon_code',
+        'tips',
         'deposit_full',
         // Cart item keys being edited
         'edit_cart_keys',
@@ -257,6 +263,7 @@ class UserBookingData
         Session::setFormVar( $this->form_id, 'last_touched', time() );
         Session::setFormVar( $this->form_id, 'verification_code', $this->verification_code ?: mt_rand( 100000, 999999 ) );
         Session::setFormVar( $this->form_id, 'verification_code_sent', $this->verification_code_sent );
+        Session::setFormVar( $this->form_id, 'order_id', $this->order_id );
     }
 
     /**
@@ -289,6 +296,7 @@ class UserBookingData
             $this->payment_type = Session::getFormVar( $this->form_id, 'payment_type' );
             $this->verification_code = Session::getFormVar( $this->form_id, 'verification_code' );
             $this->verification_code_sent = Session::getFormVar( $this->form_id, 'verification_code_sent' );
+            $this->order_id = Session::getFormVar( $this->form_id, 'order_id' );
             $this->applyTimeZone();
 
             return true;
@@ -1589,5 +1597,51 @@ class UserBookingData
     public function getVerificationCodeSent()
     {
         return $this->verification_code_sent;
+    }
+
+    /**
+     * Gets order_id
+     *
+     * @return string
+     */
+    public function getOrderId()
+    {
+        return $this->order_id;
+    }
+
+    /**
+     * Sets order_id
+     *
+     * @param string $order_id
+     * @return $this
+     */
+    public function setOrderId( $order_id )
+    {
+        $this->order_id = $order_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets tips
+     *
+     * @return float|null
+     */
+    public function getTips()
+    {
+        return $this->tips;
+    }
+
+    /**
+     * Sets tips
+     *
+     * @param float $tips
+     * @return $this
+     */
+    public function setTips( $tips )
+    {
+        $this->tips = $tips;
+
+        return $this;
     }
 }

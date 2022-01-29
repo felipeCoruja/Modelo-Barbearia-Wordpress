@@ -157,7 +157,8 @@ class Simple extends Item
                 $this->getService()->getId(),
                 Lib\Proxy\Locations::prepareStaffLocationId( $this->appointment->getLocationId(), $this->getStaff()->getId() ) ?: null,
                 substr( $this->getAppointment()->getStartDate(), 11 ),  // start time
-                $this->getCA()->getUnits()
+                $this->getCA()->getUnits(),
+                date( 'w', strtotime( $this->getAppointment()->getStartDate() ) ) + 1
             );
         } else {
             return (float) $this->getAppointment()->getCustomServicePrice();

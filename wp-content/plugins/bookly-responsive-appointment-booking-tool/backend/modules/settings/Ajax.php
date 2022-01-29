@@ -77,18 +77,22 @@ class Ajax extends Page
      */
     public static function getLogs()
     {
+        global $wpdb;
+
         $filter  = self::parameter( 'filter' );
         $columns = self::parameter( 'columns' );
         $order   = self::parameter( 'order', array() );
 
-        $query = Lib\Entities\Log::query( 'l' )
-            ->select( 'l.*' );
+        $query = Lib\Entities\Log::query();
 
         // Filters.
         list ( $start, $end ) = explode( ' - ', $filter['created_at'], 2 );
         $end = date( 'Y-m-d', strtotime( '+1 day', strtotime( $end ) ) );
 
-        $query->whereBetween( 'l.created_at', $start, $end );
+        $query->whereBetween( 'created_at', $start, $end );
+        if ( $filter['search'] != '' ) {
+            $query->whereRaw( 'target LIKE "%%%s%" OR details LIKE "%%%s%" OR ref LIKE "%%%s%" OR comment LIKE "%%%s%"', array_fill( 0, 4, $wpdb->esc_like( $filter['search'] ) ) );
+        }
 
         $filtered = $query->count();
 
@@ -104,10 +108,10 @@ class Ajax extends Page
         $logs = $query->fetchArray();
 
         wp_send_json( array(
-            'draw'            => ( int ) self::parameter( 'draw' ),
-            'recordsTotal'    => count( $logs ),
+            'draw' => ( int ) self::parameter( 'draw' ),
+            'recordsTotal' => count( $logs ),
             'recordsFiltered' => $filtered,
-            'data'            => $logs,
+            'data' => $logs,
         ) );
     }
 

@@ -16,9 +16,14 @@ use Bookly\Backend\Components\Editable\Elements;
     </div>
     <?php Proxy\CustomerGroups::renderStepCompleteInfo() ?>
     <div class="bookly-box bookly-nav-steps">
-        <div class="ml-2 <?php echo get_option( 'bookly_app_align_buttons_left' ) ? 'bookly-left' : 'bookly-right' ?>">
+        <div class="<?php echo get_option( 'bookly_app_align_buttons_left' ) ? 'mr-2 bookly-left' : 'ml-2 bookly-right' ?>">
             <div class="bookly-next-step bookly-js-next-step bookly-btn">
                 <?php Elements::renderString( array( 'bookly_l10n_step_done_button_start_over' ) ) ?>
+            </div>
+        </div>
+        <div class="<?php echo get_option( 'bookly_app_align_buttons_left' ) ? 'mr-2 bookly-left' : 'ml-2 bookly-right' ?>">
+            <div class="bookly-next-step bookly-js-next-step bookly-btn">
+                <?php Elements::renderString( array( 'bookly_l10n_button_download_ics' ) ) ?>
             </div>
         </div>
         <?php Proxy\Invoices::renderDownloadInvoice() ?>

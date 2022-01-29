@@ -146,7 +146,7 @@ class CartItem
                     $staff_service->loadBy( array( 'staff_id' => $staff_id, 'service_id' => $service_id, 'location_id' => null ) );
                 }
                 $service_price = $staff_service->getPrice() * $this->getUnits();
-                $service_price = Proxy\SpecialHours::adjustPrice( $service_price, $staff_id, $service_id, $location_id, $service_start, $this->getUnits() );
+                $service_price = Proxy\SpecialHours::adjustPrice( $service_price, $staff_id, $service_id, $location_id, $service_start, $this->getUnits(), date( 'w', strtotime( $this->slots[0][2] ) ) + 1 );
                 $service_prices_cache[ $staff_id ][ $service_id ][ $location_id ][ $service_start ] = $service_price;
             }
 

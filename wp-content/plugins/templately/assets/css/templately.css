@@ -3736,3 +3736,6 @@ div.templately-manage-accounts h1 {
   .templately-preview-image-wrapper:hover .templately-preview-hover {
     opacity: 1; }
 
+.templately-gutenberg-platform .templately-preview-image-wrapper {
+  height: calc(100% - 140px); }
+

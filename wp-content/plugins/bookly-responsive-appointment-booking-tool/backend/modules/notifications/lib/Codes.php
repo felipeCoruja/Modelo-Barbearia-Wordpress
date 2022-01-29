@@ -38,6 +38,8 @@ class Codes
             'cart' => array(
                 'cart_info' => array( 'description' => __( 'Cart information', 'bookly' ) ),
                 'cart_info_c' => array( 'description' => __( 'Cart information with cancel', 'bookly' ) ),
+                'cancel_all_combined_appointments' => array( 'description' => __( 'Cancel all appointments in chain link', 'bookly' ) ),
+                'cancel_all_combined_appointments_url' => array( 'description' => __( 'URL of cancel all appointments link (to use inside <a> tag)', 'bookly' ) ),
                 'appointment_notes' => array( 'description' => __( 'Customer notes for appointment', 'bookly' ), 'if' => true ),
             ),
             'category' => array(
@@ -65,8 +67,8 @@ class Codes
                 'approve_appointment_url' => array( 'description' => __( 'URL of approve appointment link (to use inside <a> tag)', 'bookly' ) ),
                 'cancel_appointment_confirm_url' => array( 'description' => __( 'URL of cancel appointment link with confirmation (to use inside <a> tag)', 'bookly' ) ),
                 'cancel_appointment_url' => array( 'description' => __( 'URL of cancel appointment link (to use inside <a> tag)', 'bookly' ) ),
-                'cancellation_reason' => array( 'description' => __( 'Reason you mentioned while deleting appointment', 'bookly' ), 'if' => true ),
-                'google_calendar_url' => array( 'description' => __( 'URL for adding event to client\'s Google Calendar (to use inside <a> tag)', 'bookly' ) ),
+                'cancellation_reason' => array( 'description' => __( 'Reason mentioned while cancelling appointment', 'bookly' ), 'if' => true ),
+                'google_calendar_url' => array( 'description' => __( 'URL for adding event to Google Calendar (to use inside <a> tag)', 'bookly' ) ),
                 'reject_appointment_url' => array( 'description' => __( 'URL of reject appointment link (to use inside <a> tag)', 'bookly' ) ),
                 'cancellation_time_limit' => array( 'description' => __( 'Time limit to which appointments can be cancelled ', 'bookly' ) ),
             ),

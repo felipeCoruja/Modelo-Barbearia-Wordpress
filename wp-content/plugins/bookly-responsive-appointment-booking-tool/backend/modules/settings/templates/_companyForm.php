@@ -2,6 +2,18 @@
 use Bookly\Backend\Components\Controls\Buttons;
 use Bookly\Backend\Components\Controls\Inputs as ControlsInputs;
 use Bookly\Backend\Components\Settings\Inputs;
+use Bookly\Backend\Components\Settings\Selects;
+use Bookly\Lib\Utils\Common;
+$sizes = array(
+    array( '1', __( '1 - 9 employees', 'bookly' ) ),
+    array( '10', __( '10 - 19 employees', 'bookly' ) ),
+    array( '20', __( '20 - 49 employees', 'bookly' ) ),
+    array( '50', __( '50 - 249 employees', 'bookly' ) ),
+    array( '250', __( '250 or more employees', 'bookly' ) ),
+);
+if (! get_option( 'bookly_co_size' ) ) {
+    array_unshift( $sizes, array( '', __( 'Select company size', 'bookly' ) ) );
+}
 ?>
 <form method="post" action="<?php echo esc_url( add_query_arg( 'tab', 'company' ) ) ?>">
     <div class="card-body">
@@ -13,9 +25,9 @@ use Bookly\Backend\Components\Settings\Inputs;
                            value="<?php form_option( 'bookly_co_logo_attachment_id' ) ?>"
                     />
                     <?php $img = wp_get_attachment_image_src( get_option( 'bookly_co_logo_attachment_id' ), 'thumbnail' ) ?>
-                    <div class="bookly-thumb bookly-js-image<?php echo $img ? ' bookly-thumb-with-image' : '' ?>"
-                         data-style="<?php echo $img ? 'background-image: url(' . $img[0] . '); background-size: cover;' : '' ?>"
-                        <?php echo $img ? 'style="background-image: url(' . $img[0] . '); background-size: cover;"' : '' ?>
+                    <div class="bookly-thumb bookly-js-image<?php echo esc_attr( $img ? ' bookly-thumb-with-image' : '' ) ?>"
+                         data-style="<?php echo esc_attr( $img ? 'background-image: url(' . $img[0] . '); background-size: cover;' : '' ) ?>"
+                         style="<?php echo esc_attr( $img ? 'background-image: url(' . $img[0] . '); background-size: cover;' : '' ) ?>"
                     >
                         <i class="fas fa-fw fa-4x fa-camera mt-2 text-white w-100"></i>
                         <a class="far fa-fw fa-trash-alt text-danger bookly-thumb-delete bookly-js-delete"
@@ -39,6 +51,8 @@ use Bookly\Backend\Components\Settings\Inputs;
         <?php Inputs::renderTextArea( 'bookly_co_address', __( 'Address', 'bookly' ), '', 5 ) ?>
         <?php Inputs::renderText( 'bookly_co_phone', __( 'Phone', 'bookly' ) ) ?>
         <?php Inputs::renderText( 'bookly_co_website', __( 'Website', 'bookly' ) ) ?>
+        <?php Selects::renderSingleWithCategories( 'bookly_co_industry', __( 'Industry', 'bookly' ), null, get_option( 'bookly_co_industry' ) ? Common::getIndustries() : array_merge( array( __( 'Select industry', 'bookly' ) ), Common::getIndustries() ) ) ?>
+        <?php Selects::renderSingle( 'bookly_co_size', __( 'Company size', 'bookly' ), null, $sizes ) ?>
     </div>
 
     <div class="card-footer bg-transparent d-flex justify-content-end">

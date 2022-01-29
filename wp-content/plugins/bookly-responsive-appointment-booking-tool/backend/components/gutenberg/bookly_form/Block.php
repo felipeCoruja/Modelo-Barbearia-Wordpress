@@ -43,6 +43,7 @@ class Block extends Lib\Base\Block
             'hide'           => __( 'hide', 'bookly' ),
             'fields'         => __( 'Fields', 'bookly' ),
             'duration'       => __( 'Duration', 'bookly' ),
+            'serviceHelp'    => __( 'Please be aware that a value in this field is required in the frontend. If you choose to hide this field, please be sure to select a default value for it', 'bookly' ),
             'locationCustom' => (int) Lib\Proxy\Locations::servicesPerLocationAllowed(),
             'addons'         => array(
                 'customDuration'       => (int) Lib\Config::customDurationActive(),

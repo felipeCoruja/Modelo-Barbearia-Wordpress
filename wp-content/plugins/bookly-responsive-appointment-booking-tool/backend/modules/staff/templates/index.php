@@ -50,7 +50,7 @@ use Bookly\Lib;
                         <div class="form-group">
                             <select class="form-control bookly-js-select" id="bookly-filter-category" data-placeholder="<?php esc_attr_e( 'Categories', 'bookly' ) ?>">
                                 <?php foreach ( $categories as $category ) : ?>
-                                    <option value="<?php echo $category['id'] ?>"><?php echo esc_html( $category['name'] ) ?></option>
+                                    <option value="<?php echo esc_attr( $category['id'] ) ?>"><?php echo esc_html( $category['name'] ) ?></option>
                                 <?php endforeach ?>
                             </select>
                         </div>
@@ -79,7 +79,7 @@ use Bookly\Lib;
                     <th width='24'></th>
                     <?php foreach ( $datatables['staff_members']['settings']['columns'] as $column => $show ) : ?>
                         <?php if ( $show ) : ?>
-                            <th><?php echo $datatables['staff_members']['titles'][ $column ] ?></th>
+                            <th><?php echo esc_html( $datatables['staff_members']['titles'][ $column ] ) ?></th>
                         <?php endif ?>
                     <?php endforeach ?>
                     <th width="85"></th>

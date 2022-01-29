@@ -7,8 +7,8 @@ use Bookly\Backend\Components\Cloud\Recharge;
 ?>
 <?php Recharge\Amounts\Manual\Button::renderBalance() ?>
 <div class="btn-group">
-    <a id="bookly-open-account-settings" class="btn <?php echo $cloud->account->getEmailConfirmed() ? 'btn-primary' : 'btn-danger' ?> text-truncate" href="<?php echo Common::escAdminUrl( Bookly\Backend\Modules\CloudSettings\Page::pageSlug() ) ?>">
-        <i class="fas <?php echo $cloud->account->getEmailConfirmed() ? 'fa-user' : 'fa-user-slash' ?>"></i><span class="d-none d-sm-inline ml-2"><?php echo $cloud->account->getUserName() ?></span>
+    <a id="bookly-open-account-settings" class="btn <?php echo esc_attr( $cloud->account->getEmailConfirmed() ? 'btn-primary' : 'btn-danger' ) ?> text-truncate" href="<?php echo Common::escAdminUrl( Bookly\Backend\Modules\CloudSettings\Page::pageSlug() ) ?>">
+        <i class="fas <?php echo esc_attr( $cloud->account->getEmailConfirmed() ? 'fa-user' : 'fa-user-slash' ) ?>"></i><span class="d-none d-sm-inline ml-2"><?php echo esc_html( $cloud->account->getUserName() ) ?></span>
     </a>
     <?php if ( ! $cloud->account->getEmailConfirmed() ) : ?>
         <button id="bookly-open-email-confirm" type="button" class="btn btn-success text-nowrap ladda-button" data-spinner-color="#666666" data-style="zoom-in" data-spinner-size="40">

@@ -199,6 +199,14 @@ class Ajax extends Lib\Base\Ajax
             $query->where( 'a.service_id', $filter['service'] ?: null );
         }
 
+        if ( isset( $filter['location'] ) && $filter['location'] != '' ) {
+            if ( $filter['location'] == 'w/o' ) {
+                $query->where( 'a.location_id', null );
+            } else {
+                $query->where( 'a.location_id', $filter['location'] );
+            }
+        }
+
         if ( $filter['status'] != '' ) {
             $query->where( 'ca.status', $filter['status'] );
         }

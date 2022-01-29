@@ -35,10 +35,16 @@
 
         // "Save" button
         $('#bookly-ace-save', $modal).on('click', function () {
-            currentObj.values[currentObj.option] = editor.booklyAceEditor('getValue');
-            currentObj.update();
-
-            $modal.booklyModal('hide');
+            let data = editor.booklyAceEditor('getValue'),
+                update = true;
+            if (data.match(/<script(.*?)>/i)) {
+                update = confirm(BooklyL10nEditable.script_is_used);
+            }
+            if (update) {
+                currentObj.values[currentObj.option] = data;
+                currentObj.update();
+                $modal.booklyModal('hide');
+            }
         });
     }
 })(jQuery);

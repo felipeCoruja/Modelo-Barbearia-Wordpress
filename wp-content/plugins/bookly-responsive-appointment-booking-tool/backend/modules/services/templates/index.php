@@ -38,7 +38,7 @@ use Bookly\Backend\Components\Dialogs;
                     <div class="form-group">
                         <select class="form-control bookly-js-select" id="bookly-filter-category" data-placeholder="<?php esc_attr_e( 'Categories', 'bookly' ) ?>">
                             <?php foreach ( $categories as $category ) : ?>
-                                <option value="<?php echo $category['id'] ?>"><?php echo esc_html( $category['name'] ) ?></option>
+                                <option value="<?php echo esc_attr( $category['id'] ) ?>"><?php echo esc_html( $category['name'] ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
@@ -54,7 +54,7 @@ use Bookly\Backend\Components\Dialogs;
                     <th width="24"></th>
                     <?php foreach ( $datatables['services']['settings']['columns'] as $column => $show ) : ?>
                         <?php if ( $show ) : ?>
-                            <th><?php echo $datatables['services']['titles'][ $column ] ?></th>
+                            <th><?php echo esc_html( $datatables['services']['titles'][ $column ] ) ?></th>
                         <?php endif ?>
                     <?php endforeach ?>
                     <th width="75"></th>

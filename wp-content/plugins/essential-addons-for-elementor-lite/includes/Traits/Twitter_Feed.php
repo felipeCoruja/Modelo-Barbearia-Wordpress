@@ -67,9 +67,9 @@ trait Twitter_Feed
                 ],
             ]);
 
-            if (!is_wp_error($response)) {
-                $items = json_decode(wp_remote_retrieve_body($response), true);
-                set_transient( $cache_key, $items, $settings['eael_twitter_feed_data_cache_limit'] * MINUTE_IN_SECONDS);
+            if(!empty($response['response']) && $response['response']['code']==200){
+	            $items = json_decode(wp_remote_retrieve_body($response), true);
+	            set_transient( $cache_key, $items, $settings['eael_twitter_feed_data_cache_limit'] * MINUTE_IN_SECONDS);
             }
         }
 
@@ -100,6 +100,11 @@ trait Twitter_Feed
         foreach ($items as $item) {
             $delimeter = strlen($item['full_text']) > $settings['eael_twitter_feed_content_length'] ? '...' : '';
 
+	        $media = isset( $item['extended_entities']['media'] ) ? $item['extended_entities']['media'] :
+		        ( isset( $item['retweeted_status']['entities']['media'] ) ? $item['retweeted_status']['entities']['media'] :
+			        ( isset( $item['quoted_status']['entities']['media'] ) ? $item['quoted_status']['entities']['media'] :
+				        [] ) );
+
             $html .= '<div class="eael-twitter-feed-item ' . $class . '">
 				<div class="eael-twitter-feed-item-inner">
 				    <div class="eael-twitter-feed-item-header clearfix">';
@@ -129,7 +134,7 @@ trait Twitter_Feed
                             $html .= '<a href="//twitter.com/' . $item['user']['screen_name'] . '/status/' . $item['id_str'] . '" target="_blank" class="read-more-link">'.$read_more.' <i class="fas fa-angle-double-right"></i></a>';
                         }
                     $html .= '</div>
-                    ' . (isset($item['extended_entities']['media'][0]) && $settings['eael_twitter_feed_media'] == 'true' ? ($item['extended_entities']['media'][0]['type'] == 'photo' ? '<img src="' . $item['extended_entities']['media'][0]['media_url_https'] . '">' : '') : '') . '
+                    ' . ( isset( $media[0] ) && $settings['eael_twitter_feed_media'] == 'true' ? ( $media[0]['type'] == 'photo' ? '<img src="' . $media[0]['media_url_https'] . '">' : '' ) : '' ) . '
                 </div>
 			</div>';
         }

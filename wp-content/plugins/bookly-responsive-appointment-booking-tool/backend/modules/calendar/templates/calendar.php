@@ -38,7 +38,7 @@ use Bookly\Backend\Modules\Calendar\Proxy;
                             <li<?php if ( ! $category_id ) : ?> data-flatten-if-single<?php endif ?>><?php echo esc_html( $category['name'] ) ?>
                                 <ul>
                                     <?php foreach ( $category['items'] as $service ) : ?>
-                                        <li data-value="<?php echo $service['id'] ?>">
+                                        <li data-value="<?php echo esc_attr( $service['id'] ) ?>">
                                             <?php echo esc_html( $service['title'] ) ?>
                                         </li>
                                     <?php endforeach ?>
@@ -59,7 +59,7 @@ use Bookly\Backend\Modules\Calendar\Proxy;
                                 <li<?php if ( ! $category_id ) : ?> data-flatten-if-single<?php endif ?>><?php echo esc_html( $category['name'] ) ?>
                                     <ul>
                                         <?php foreach ( $category['items'] as $staff ) : ?>
-                                            <li data-value="<?php echo $staff['id'] ?>">
+                                            <li data-value="<?php echo esc_attr( $staff['id'] ) ?>">
                                                 <?php echo esc_html( $staff['full_name'] ) ?>
                                             </li>
                                         <?php endforeach ?>
@@ -71,17 +71,17 @@ use Bookly\Backend\Modules\Calendar\Proxy;
                 <?php endif ?>
                 <div class="col-sm-auto mb-2 text-center">
                     <div class="btn-group">
-                        <button type="button" class="btn <?php echo $refresh_rate > 0 ? 'btn-success' : 'btn-default' ?>" id="bookly-calendar-refresh"><i class="fas fa-sync-alt"></i></button>
-                        <button type="button" class="btn <?php echo $refresh_rate > 0 ? 'btn-success' : 'btn-default' ?> dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                        <button type="button" class="btn <?php echo esc_attr( $refresh_rate > 0 ? 'btn-success' : 'btn-default' ) ?>" id="bookly-calendar-refresh"><i class="fas fa-sync-alt"></i></button>
+                        <button type="button" class="btn <?php echo esc_attr( $refresh_rate > 0 ? 'btn-success' : 'btn-default' ) ?> dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                         <div class="dropdown-menu pb-0 dropdown-menu-right">
                             <h6 class="dropdown-header"><?php esc_html_e( 'Auto-refresh Calendar', 'bookly' ) ?></h6>
                             <div class="dropdown-divider"></div>
                             <?php Components\Controls\Inputs::renderRadioGroup( null, null,
                                 array(
-                                    '60'  => array( 'title' => __( 'Every 1 minute', 'bookly' ) ),
+                                    '60' => array( 'title' => __( 'Every 1 minute', 'bookly' ) ),
                                     '300' => array( 'title' => __( 'Every 5 minutes', 'bookly' ) ),
                                     '900' => array( 'title' => __( 'Every 15 minutes', 'bookly' ) ),
-                                    '0'   => array( 'title' => __( 'Disable', 'bookly' ) ),
+                                    '0' => array( 'title' => __( 'Disable', 'bookly' ) ),
                                 ),
                                 $refresh_rate,
                                 array( 'name' => 'bookly_calendar_refresh_rate', 'parent-class' => 'mx-3 my-2 w-100' ) ) ?>
@@ -89,7 +89,7 @@ use Bookly\Backend\Modules\Calendar\Proxy;
                     </div>
                 </div>
             </div>
-            <div class="nav-hoverable nav-hoverable-pills justify-content-center justify-content-xl-start bookly-js-staff-pills">
+            <div class="nav-hoverable nav-hoverable-pills justify-content-center justify-content-xl-start bookly-js-staff-pills <?php if( count( $staff_members) == 1 ) : ?>d-none<?php endif ?>">
                 <ul class="col-auto nav nav-pills flex-nowrap">
                     <?php if ( Common::isCurrentUserSupervisor() ) : ?>
                         <li class="nav-item mr-2">
@@ -103,10 +103,10 @@ use Bookly\Backend\Modules\Calendar\Proxy;
                     <?php endif ?>
                     <?php foreach ( $staff_members as $staff ) : ?>
                         <li class="nav-item mr-2 text-nowrap<?php if ( ! Common::isCurrentUserSupervisor() ) : ?> d-none<?php endif ?>" style="display:none;">
-                            <a class="nav-link d-block p-2 text-center" href="#" data-staff_id="<?php echo $staff->getId() ?>">
+                            <a class="nav-link d-block p-2 text-center" href="#" data-staff_id="<?php echo esc_attr( $staff->getId() ) ?>">
                                 <?php if ( $image = $staff->getImageUrl( 'thumbnail' ) ) : ?>
-                                <span class="rounded-circle d-flex overflow-hidden m-auto" style="height: 40px; width: 40px;">
-                                    <img src="<?php echo $image ?>" alt="<?php echo esc_attr( $staff->getFullName() ) ?>" class="d-block mx-auto" style="max-width: 40px; max-height: 40px; align-self: center;" />
+                                    <span class="rounded-circle d-flex overflow-hidden m-auto" style="height: 40px; width: 40px;">
+                                    <img src="<?php echo esc_attr( $image ) ?>" alt="<?php echo esc_attr( $staff->getFullName() ) ?>" class="d-block mx-auto" style="max-width: 40px; max-height: 40px; align-self: center;"/>
                                 </span>
                                 <?php else : ?>
                                     <i class="far fa-user-circle fa-2x d-block mx-auto font-weight-bold" style="width: 40px; height: 40px;"></i>

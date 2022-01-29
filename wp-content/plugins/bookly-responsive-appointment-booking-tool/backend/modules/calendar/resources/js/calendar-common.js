@@ -25,7 +25,8 @@
                     dayHeaderFormat: function (date) {
                         return moment(date).locale('bookly').format('ddd');
                     },
-                    displayEventEnd: true
+                    displayEventEnd: true,
+                    dayMaxEvents: obj.options.l10n.monthDayMaxEvents === '1'
                 },
                 timeGridDay: {
                     dayHeaderFormat: function (date) {
@@ -41,8 +42,12 @@
             slotMinTime: obj.options.l10n.slotMinTime,
             slotMaxTime: obj.options.l10n.slotMaxTime,
             scrollTime: obj.options.l10n.scrollTime,
+            moreLinkContent: function (arg) {
+                return obj.options.l10n.more.replace('%d', arg.num)
+            },
             flexibleSlotTimeLimits: true,
             eventStartEditable: false,
+
             slotLabelFormat: function (date) {
                 return moment(date).locale('bookly').format(obj.options.l10n.mjsTimeFormat);
             },
@@ -82,12 +87,7 @@
             eventBackgroundColor: '#ccc',
             eventMouseEnter: function(arg) {
                 if (arg.event.display === 'auto' && arg.view.type !== 'listWeek') {
-                    let $event = $(arg.el)
-                    let $popover = $event.find('.bookly-ec-popover');
-                    let offset = $event.offset();
-                    let top = Math.max($popover.outerHeight() + 40, Math.max($event.closest('.ec-body').offset().top, offset.top) - $(document).scrollTop());
-                    $popover.css('top', (top - $popover.outerHeight() - 4) + 'px')
-                    $popover.css('left', (offset.left + 2) + 'px')
+                    fixPopoverPosition($(arg.el).find('.bookly-ec-popover'));
                 }
             },
             eventContent: function (arg) {
@@ -178,12 +178,18 @@
 
                 if (arg.view.type !== 'listWeek') {
                     $buttons.addClass('border-top pt-2 justify-content-end');
-                    let $popover =  $('<div class="bookly-popover bs-popover-top bookly-ec-popover">')
+                    let $popover = $('<div class="bookly-popover bs-popover-top bookly-ec-popover">')
                     let $arrow = $('<div class="arrow" style="left:8px;">');
                     let $body = $('<div class="popover-body">');
                     $body.append(props.tooltip).append($buttons).css({minWidth: '200px'});
                     $popover.append($arrow).append($body);
                     nodes.push($popover.get(0));
+                    $time.on('touchstart', function () {
+                        fixPopoverPosition($popover);
+                    });
+                    $title.on('touchstart', function () {
+                        fixPopoverPosition($popover);
+                    });
                 } else {
                     $title.append($buttons);
                 }
@@ -271,6 +277,15 @@
             }
         };
 
+        function fixPopoverPosition($popover) {
+            let $event = $popover.closest('.ec-event'),
+                offset = $event.offset(),
+                top = Math.max($popover.outerHeight() + 40, Math.max($event.closest('.ec-body').offset().top, offset.top) - $(document).scrollTop());
+
+            $popover.css('top', (top - $popover.outerHeight() - 4) + 'px')
+            $popover.css('left', (offset.left + 2) + 'px')
+        }
+
         function addAppointmentDialog(date, staffId, visibleStaffId) {
             BooklyAppointmentDialog.showDialog(
                 null,
@@ -329,6 +344,11 @@
 
         // Export calendar
         this.ec = calendar;
+        if (obj.options.l10n.monthDayMaxEvents == '1') {
+            let theme = this.ec.getOption('theme');
+            theme.month += ' ec-minimalistic';
+            this.ec.setOption('theme', theme);
+        }
     };
 
     var locationChanged = false;

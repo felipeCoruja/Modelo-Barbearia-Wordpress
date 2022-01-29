@@ -5,6 +5,7 @@ use Bookly\Lib;
 
 /**
  * Class Backend
+ *
  * @package Bookly\Backend
  */
 abstract class Backend
@@ -19,22 +20,26 @@ abstract class Backend
         add_action( 'admin_menu', array( __CLASS__, 'addAdminMenu' ) );
 
         add_action( 'all_admin_notices', function () use ( $bookly_page ) {
-            if ( $bookly_page ) {
-                // Subscribe notice.
-                Components\Notices\Subscribe::render();
-                // Subscribe notice.
-                Components\Notices\LiteRebranding::render();
-                // NPS notice.
-                Components\Notices\Nps::render();
-                // Collect stats notice.
-                Components\Notices\CollectStats::render();
-                // Show Powered by Bookly notice.
-                Components\Notices\PoweredBy::render();
-                // Show SMS promotion notice.
-                Components\Notices\SmsPromotion::render();
+            if ( ! Lib\Config::setupMode() ) {
+                if ( $bookly_page ) {
+                    // Subscribe notice.
+                    Components\Notices\Subscribe\Notice::render();
+                    // Subscribe notice.
+                    Components\Notices\Lite\Notice::render();
+                    // NPS notice.
+                    Components\Notices\Nps\Notice::render();
+                    // Collect stats notice.
+                    Components\Notices\Statistic\Notice::render();
+                    // Show Powered by Bookly notice.
+                    Components\Notices\PoweredBy\Notice::render();
+                    // Show SMS promotion notice.
+                    Components\Notices\Promotion\Notice::render();
+                    // Show renew auto-recharge notice.
+                    Components\Notices\RenewAutoRecharge\Notice::create( 'bookly-js-renew' )->render();
+                }
+                // Let add-ons render admin notices.
+                Lib\Proxy\Shared::renderAdminNotices( $bookly_page );
             }
-            // Let add-ons render admin notices.
-            Lib\Proxy\Shared::renderAdminNotices( $bookly_page );
         }, 10, 0 );
 
         // for Site Health
@@ -49,6 +54,20 @@ abstract class Backend
         if ( $bookly_page && strpos( $_SERVER['HTTP_USER_AGENT'], 'Trident/7.0' ) !== false ) {
             Lib\Utils\Common::disableEmoji();
         }
+
+        // Elementor hooks
+        add_action( 'elementor/elements/categories_registered', function ( $elements_manager ) {
+            /** @var \Elementor\Elements_Manager $elements_manager */
+            $elements_manager->add_category( 'bookly', array( 'title' => 'Bookly' ) );
+        } );
+        add_action( 'elementor/editor/before_enqueue_scripts', function () {
+            wp_register_style(
+                'bookly-elementor',
+                plugins_url( '/backend/components/elementor/resources/css/elementor.css', __DIR__ ),
+                array(),
+                Lib\Plugin::getVersion()
+            );
+        } );
     }
 
     /**
@@ -63,11 +82,16 @@ abstract class Backend
         $required_capability = Lib\Utils\Common::getRequiredCapability();
         if ( $current_user->has_cap( $required_capability ) || $current_user->has_cap( 'manage_bookly_appointments' ) || $is_staff ) {
             $dynamic_position = '80.0000001' . mt_rand( 1, 1000 ); // position always is under `Settings`
-            $badge_number = Modules\News\Page::getNewsCount() +
-                Modules\Shop\Page::getNotSeenCount() +
-                Lib\Cloud\SMS::getUndeliveredSmsCount()
-            ;
-
+            $badge_number = 0;
+            if ( Lib\Utils\Common::isCurrentUserSupervisor() ) {
+                $badge_number = Modules\Shop\Page::getNotSeenCount();
+                if ( get_option( 'bookly_gen_badge_consider_news' ) ) {
+                    $badge_number += Modules\News\Page::getNewsCount();
+                }
+                if ( get_option( 'bookly_cloud_badge_consider_sms' ) ) {
+                    $badge_number += Lib\Cloud\SMS::getUndeliveredSmsCount();
+                }
+            }
             if ( $badge_number ) {
                 add_menu_page( 'Bookly', sprintf( 'Bookly <span class="update-plugins count-%d"><span class="update-count">%d</span></span>', $badge_number, $badge_number ), 'read', 'bookly-menu', '',
                     plugins_url( 'resources/images/menu.png', __FILE__ ), $dynamic_position );
@@ -75,22 +99,25 @@ abstract class Backend
                 add_menu_page( 'Bookly', 'Bookly', 'read', 'bookly-menu', '',
                     plugins_url( 'resources/images/menu.png', __FILE__ ), $dynamic_position );
             }
-            if ( Lib\Proxy\Pro::graceExpired() ) {
+            if ( Lib\Config::setupMode() ) {
+                $setup = __( 'Initial setup', 'bookly' );
+                add_submenu_page( 'bookly-menu', $setup, $setup, $required_capability, Modules\Setup\Page::pageSlug(), function () { Modules\Setup\Page::render(); } );
+            } elseif ( Lib\Proxy\Pro::graceExpired() ) {
                 Lib\Proxy\Pro::addLicenseBooklyMenuItem();
             } else {
                 // Translated submenu pages.
-                $dashboard      = __( 'Dashboard',           'bookly' );
-                $calendar       = __( 'Calendar',            'bookly' );
-                $appointments   = __( 'Appointments',        'bookly' );
-                $staff_members  = __( 'Staff Members',       'bookly' );
-                $services       = __( 'Services',            'bookly' );
-                $notifications  = __( 'Email Notifications', 'bookly' );
-                $customers      = __( 'Customers',           'bookly' );
-                $payments       = __( 'Payments',            'bookly' );
-                $appearance     = __( 'Appearance',          'bookly' );
-                $settings       = __( 'Settings',            'bookly' );
-                $products       = __( 'Products',            'bookly' );
-                $billing        = __( 'Billing',             'bookly' );
+                $dashboard = __( 'Dashboard', 'bookly' );
+                $calendar = __( 'Calendar', 'bookly' );
+                $appointments = __( 'Appointments', 'bookly' );
+                $staff_members = __( 'Staff Members', 'bookly' );
+                $services = __( 'Services', 'bookly' );
+                $notifications = __( 'Email Notifications', 'bookly' );
+                $customers = __( 'Customers', 'bookly' );
+                $payments = __( 'Payments', 'bookly' );
+                $appearance = __( 'Appearance', 'bookly' );
+                $settings = __( 'Settings', 'bookly' );
+                $products = __( 'Products', 'bookly' );
+                $billing = __( 'Billing', 'bookly' );
 
                 add_submenu_page( 'bookly-menu', $dashboard, $dashboard, $required_capability,
                     Modules\Dashboard\Page::pageSlug(), function () { Modules\Dashboard\Page::render(); } );

@@ -10,9 +10,9 @@
             <table>
                 <tr>
                     <td rowspan="2" style="vertical-align: bottom;line-height: 6.5rem;font-size: 2rem">$</td>
-                    <td rowspan="2"><span style="font-size: 6rem"><?php echo $best_offer['amount'] ?></span></td>
+                    <td rowspan="2"><span style="font-size: 6rem"><?php echo esc_html( $best_offer['amount'] ) ?></span></td>
                     <?php if ( $best_offer['bonus'] ) : ?>
-                        <td rowspan="2" style="vertical-align: top;font-size: 2rem; line-height: 6rem">+<b class="mr-1 text-warning"><?php echo $best_offer['bonus'] ?></b></td>
+                        <td rowspan="2" style="vertical-align: top;font-size: 2rem; line-height: 6rem">+<b class="mr-1 text-warning"><?php echo esc_html( $best_offer['bonus'] ) ?></b></td>
                     <?php endif ?>
                     <td style="padding-top: 22px" class="text-right">
                         <b class="bg-warning px-2 py-1 text-dark text-uppercase" style="font-size: 1rem"><?php esc_html_e( 'Best offer', 'bookly' ) ?></b>

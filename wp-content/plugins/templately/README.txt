@@ -5,7 +5,7 @@ Tags: templates, elementor, template-cloud, template, clouds, elementor template
 Requires at least: 5.0
 Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,7 +54,7 @@ Create conversion optimized landing pages for every niche using the Templately P
 
 ## 🚀 BACKED BY A TRUSTED TEAM ##
 
-This Templates Cloud is brought to you by the team behind [WPDeveloper](https://wpdeveloper.net), a dedicated marketplace for WordPress, trusted by over 3,000,000+ happy users.
+This Templates Cloud is brought to you by the team behind [WPDeveloper](https://wpdeveloper.com), a dedicated marketplace for WordPress, trusted by over 3,000,000+ happy users.
 
 ## 👨‍💻 DOCUMENTATION AND SUPPORT ##
 
@@ -79,7 +79,7 @@ If you like Templately, then consider checking out our other WordPress Plugins:
 - ⭐ [ReviewX](https://wordpress.org/plugins/reviewx/): WooCommerce Product review plugin that allows users to submit product reviews with multiple criteria, photos, video and more.
 - ⚡ [Flexia](http://wordpress.org/plugins/flexia): Most lightweight, customizable & multi purpose theme for WordPress.
 
-Visit [WPDeveloper](https://wpdeveloper.net/) to learn more about how to do better in WordPress with [Help Tutorial, Tips & Tricks](https://wpdeveloper.net/blog).
+Visit [WPDeveloper](https://wpdeveloper.com/) to learn more about how to do better in WordPress with [Help Tutorial, Tips & Tricks](https://wpdeveloper.com/blog).
 
 == Installation ==
 
@@ -112,6 +112,10 @@ Yes, it will work with any standard WordPress theme.
 
 
 == Changelog ==
+
+= 1.3.1 - 21-11-2021 =
+Added: Packs and pages support for Gutenberg.
+Few minor bug fix and improvements
 
 = 1.3.0 - 04-07-2021 =
 Added: New Profile page with My Favourites & Downloaded Item List

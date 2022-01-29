@@ -18,12 +18,12 @@ export default function stepService(params) {
         return;
     }
     var data = {
-            action    : 'bookly_render_service',
+            action: 'bookly_render_service',
             csrf_token: BooklyL10n.csrf_token,
         },
         $container = opt[params.form_id].$container;
     if (opt[params.form_id].use_client_time_zone) {
-        data.time_zone        = opt[params.form_id].timeZone;
+        data.time_zone = opt[params.form_id].timeZone;
         data.time_zone_offset = opt[params.form_id].timeZoneOffset;
     }
     $.extend(data, params);
@@ -64,7 +64,7 @@ export default function stepService(params) {
 
                 // Set up selects.
                 if (serviceNameWithDuration) {
-                    $.each(services, function(id, service) {
+                    $.each(services, function (id, service) {
                         service.name = service.name + ' ( ' + service.duration + ' )';
                     });
                 }
@@ -86,6 +86,7 @@ export default function stepService(params) {
                             showServiceInfo,
                             showStaffInfo,
                             maxQuantity,
+                            date_from_element: $date_from,
                             hasLocationSelect: !opt[params.form_id].form_attributes.hide_locations,
                             hasCategorySelect: !opt[params.form_id].form_attributes.hide_categories,
                             hasServiceSelect: !(opt[params.form_id].form_attributes.hide_services && defaults.service_id),
@@ -100,33 +101,38 @@ export default function stepService(params) {
                 });
 
                 // Init Pickadate.
+                $date_from.data('date_min', response.date_min || true);
                 $date_from.pickadate({
-                    formatSubmit    : 'yyyy-mm-dd',
-                    format          : opt[params.form_id].date_format,
-                    min             : response.date_min || true,
-                    max             : response.date_max || true,
-                    clear           : false,
-                    close           : false,
-                    today           : BooklyL10n.today,
-                    monthsFull      : BooklyL10n.months,
-                    weekdaysFull    : BooklyL10n.days,
-                    weekdaysShort   : BooklyL10n.daysShort,
-                    labelMonthNext  : BooklyL10n.nextMonth,
-                    labelMonthPrev  : BooklyL10n.prevMonth,
-                    firstDay        : opt[params.form_id].firstDay,
-                    onSet           : function(timestamp) {
+                    formatSubmit: 'yyyy-mm-dd',
+                    format: opt[params.form_id].date_format,
+                    min: response.date_min || true,
+                    max: response.date_max || true,
+                    clear: false,
+                    close: false,
+                    today: BooklyL10n.today,
+                    monthsFull: BooklyL10n.months,
+                    monthsShort: BooklyL10n.monthsShort,
+                    weekdaysFull: BooklyL10n.days,
+                    weekdaysShort: BooklyL10n.daysShort,
+                    labelMonthNext: BooklyL10n.nextMonth,
+                    labelMonthPrev: BooklyL10n.prevMonth,
+                    firstDay: opt[params.form_id].firstDay,
+                    onSet: function (timestamp) {
                         if ($.isNumeric(timestamp.select)) {
                             // Checks appropriate day of the week
                             var date = new Date(timestamp.select);
                             $('.bookly-js-week-day[value="' + (date.getDay() + 1) + '"]:not(:checked)', $container).attr('checked', true).trigger('change');
                         }
+                    },
+                    onClose: function () {
+                        $date_from.data('updated', true);
                     }
                 });
 
                 $('.bookly-js-go-to-cart', $container).on('click', function (e) {
                     e.preventDefault();
                     laddaStart(this);
-                    stepCart({form_id: params.form_id,from_step : 'service'});
+                    stepCart({form_id: params.form_id, from_step: 'service'});
                 });
 
                 if (opt[params.form_id].form_attributes.hide_date) {
@@ -151,8 +157,8 @@ export default function stepService(params) {
 
                 // time from
                 $select_time_from.on('change', function () {
-                    var start_time       = $(this).val(),
-                        end_time         = $select_time_to.val(),
+                    var start_time = $(this).val(),
+                        end_time = $select_time_to.val(),
                         $last_time_entry = $('option:last', $select_time_from);
 
                     $select_time_to.empty();
@@ -174,8 +180,8 @@ export default function stepService(params) {
                     $select_time_to.val(end_time >= first_value ? end_time : first_value);
                 });
 
-                let stepServiceValidator = function() {
-                    let valid      = true,
+                let stepServiceValidator = function () {
+                    let valid = true,
                         $scroll_to = null;
 
                     $(c.validate()).each(function (_, status) {
@@ -254,29 +260,29 @@ export default function stepService(params) {
                                     ? _service.time_requirements
                                     : 'required']
                             );
-                            recurrence_enabled = Math.min( recurrence_enabled, _service.recurrence_enabled);
+                            recurrence_enabled = Math.min(recurrence_enabled, _service.recurrence_enabled);
                             has_extras += _service.has_extras;
                         });
 
                         // Prepare days.
                         var days = [];
-                        $('.bookly-js-week-days .active input.bookly-js-week-day', $container).each(function() {
+                        $('.bookly-js-week-days .active input.bookly-js-week-day', $container).each(function () {
                             days.push(this.value);
                         });
                         booklyAjax({
-                            type : 'POST',
-                            data : {
-                                action     : 'bookly_session_save',
-                                csrf_token : BooklyL10n.csrf_token,
-                                form_id    : params.form_id,
-                                chain      : chain,
-                                date_from  : $date_from.pickadate('picker').get('select', 'yyyy-mm-dd'),
-                                days       : days,
-                                time_from  : opt[params.form_id].form_attributes.hide_time_range ? null : $select_time_from.val(),
-                                time_to    : opt[params.form_id].form_attributes.hide_time_range ? null : $select_time_to.val(),
-                                no_extras  : has_extras == 0
+                            type: 'POST',
+                            data: {
+                                action: 'bookly_session_save',
+                                csrf_token: BooklyL10n.csrf_token,
+                                form_id: params.form_id,
+                                chain: chain,
+                                date_from: $date_from.pickadate('picker').get('select', 'yyyy-mm-dd'),
+                                days: days,
+                                time_from: opt[params.form_id].form_attributes.hide_time_range ? null : $select_time_from.val(),
+                                time_to: opt[params.form_id].form_attributes.hide_time_range ? null : $select_time_to.val(),
+                                no_extras: has_extras == 0
                             },
-                            success     : function (response) {
+                            success: function (response) {
                                 opt[params.form_id].no_time = time_requirements == 0;
                                 opt[params.form_id].no_extras = has_extras == 0;
                                 opt[params.form_id].recurrence_enabled = recurrence_enabled == 1;

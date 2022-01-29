@@ -94,6 +94,16 @@ use Bookly\Lib\Config;
         </div>
 
         <?php Proxy\Files::renderAppearance() ?>
+
+        <div class="bookly-box bookly-table bookly-js-terms">
+            <div class="bookly-checkbox-group">
+                <input type="checkbox">
+                <label class="bookly-square bookly-checkbox" style="width:28px; float:left; margin-top: -5px;">
+                    <i class="bookly-icon-sm"></i>
+                </label>
+                <?php Elements::renderLabel( array( 'bookly_l10n_label_terms', 'bookly_l10n_error_terms' ) ) ?>
+            </div>
+        </div>
     </div>
 
     <?php Proxy\RecurringAppointments::renderInfoMessage() ?>

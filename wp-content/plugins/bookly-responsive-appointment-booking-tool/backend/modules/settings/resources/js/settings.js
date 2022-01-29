@@ -1,39 +1,41 @@
 jQuery(function ($) {
     let container = {
             $calendar: $('#bookly_settings_calendar'),
+            $log: $('#bookly_settings_logs')
         },
-        $helpBtn                  = $('#bookly-help-btn'),
-        $businessHours            = $('#business-hours'),
-        $companyLogo              = $('#bookly-js-company-logo'),
-        $finalStepUrl             = $('.bookly-js-final-step-url'),
-        $finalStepUrlMode         = $('#bookly_settings_final_step_url_mode'),
-        $participants             = $('#bookly_appointment_participants'),
-        $defaultCountry           = $('#bookly_cst_phone_default_country'),
-        $defaultCountryCode       = $('#bookly_cst_default_country_code'),
-        $gcSyncMode               = $('#bookly_gc_sync_mode'),
-        $gcLimitEvents            = $('#bookly_gc_limit_events'),
-        $gcFullSyncOffset         = $('#bookly_gc_full_sync_offset_days_before'),
-        $gcFullSyncTitles         = $('#bookly_gc_full_sync_titles'),
+        $helpBtn = $('#bookly-help-btn'),
+        $businessHours = $('#business-hours'),
+        $companyLogo = $('#bookly-js-company-logo'),
+        $finalStepUrl = $('.bookly-js-final-step-url'),
+        $finalStepUrlMode = $('#bookly_settings_final_step_url_mode'),
+        $participants = $('#bookly_appointment_participants'),
+        $defaultCountry = $('#bookly_cst_phone_default_country'),
+        $defaultCountryCode = $('#bookly_cst_default_country_code'),
+        $gcSyncMode = $('#bookly_gc_sync_mode'),
+        $gcLimitEvents = $('#bookly_gc_limit_events'),
+        $gcFullSyncOffset = $('#bookly_gc_full_sync_offset_days_before'),
+        $gcFullSyncTitles = $('#bookly_gc_full_sync_titles'),
         $gcForceUpdateDescription = $('#bookly_gc_force_update_description'),
-        $ocSyncMode               = $('#bookly_oc_sync_mode'),
-        $ocLimitEvents            = $('#bookly_oc_limit_events'),
-        $ocFullSyncOffset         = $('#bookly_oc_full_sync_offset_days_before'),
-        $ocFullSyncTitles         = $('#bookly_oc_full_sync_titles'),
-        $currency                 = $('#bookly_pmt_currency'),
-        $formats                  = $('#bookly_pmt_price_format'),
-        $logsDateFilter           = $('#bookly-logs-date-filter'),
-        $logsTable                = $('#bookly-logs-table'),
-        $calOneParticipant        = $('[name="bookly_cal_one_participant"]'),
-        $calManyParticipants      = $('[name="bookly_cal_many_participants"]'),
-        $woocommerceInfo          = $('[name="bookly_l10n_wc_cart_info_value"]'),
-        $customerAddress          = $('[name="bookly_l10n_cst_address_template"]'),
-        $gcDescription            = $('[name="bookly_gc_event_description"]'),
-        $ocDescription            = $('[name="bookly_oc_event_description"]'),
-        $displayedTimeSlots       = $('#bookly_appointments_displayed_time_slots'),
-        $timeDelimiter            = $('#bookly_appointments_time_delimiter'),
-        $colorPicker              = $('.bookly-js-color-picker', container.$calendar),
-        $coloringMode             = $('#bookly_cal_coloring_mode', container.$calendar),
-        $colorsBy                 = $('.bookly-js-colors-by', container.$calendar)
+        $ocSyncMode = $('#bookly_oc_sync_mode'),
+        $ocLimitEvents = $('#bookly_oc_limit_events'),
+        $ocFullSyncOffset = $('#bookly_oc_full_sync_offset_days_before'),
+        $ocFullSyncTitles = $('#bookly_oc_full_sync_titles'),
+        $currency = $('#bookly_pmt_currency'),
+        $formats = $('#bookly_pmt_price_format'),
+        $logsDateFilter = $('#bookly-logs-date-filter', container.$log),
+        $logsTable = $('#bookly-logs-table', container.$log),
+        $logsSearch = $('#bookly-log-search', container.$log),
+        $calOneParticipant = $('[name="bookly_cal_one_participant"]'),
+        $calManyParticipants = $('[name="bookly_cal_many_participants"]'),
+        $woocommerceInfo = $('[name="bookly_l10n_wc_cart_info_value"]'),
+        $customerAddress = $('[name="bookly_l10n_cst_address_template"]'),
+        $gcDescription = $('[name="bookly_gc_event_description"]'),
+        $ocDescription = $('[name="bookly_oc_event_description"]'),
+        $displayedTimeSlots = $('#bookly_appointments_displayed_time_slots'),
+        $timeDelimiter = $('#bookly_appointments_time_delimiter'),
+        $colorPicker = $('.bookly-js-color-picker', container.$calendar),
+        $coloringMode = $('#bookly_cal_coloring_mode', container.$calendar),
+        $colorsBy = $('.bookly-js-colors-by', container.$calendar)
     ;
 
     booklyAlert(BooklyL10n.alert);
@@ -118,10 +120,10 @@ jQuery(function ($) {
         $('#bookly_cal_many_participants').hide();
         $('#' + this.value).show();
     }).trigger('change');
-    $("#bookly_settings_calendar button[type=reset]").on( 'click', function () {
+    $('#bookly_settings_calendar button[type=reset]').on('click', function () {
         setTimeout(function () {
             $participants.trigger('change');
-        }, 50 );
+        }, 50);
     });
 
     $calOneParticipant.data('default', $calOneParticipant.val());
@@ -160,7 +162,7 @@ jQuery(function ($) {
         $companyLogo.find('.bookly-thumb').removeClass('bookly-thumb-with-image');
         $(this).hide();
     });
-    $companyLogo.find('.bookly-js-edit').on('click', function() {
+    $companyLogo.find('.bookly-js-edit').on('click', function () {
         let frame = wp.media({
             library: {type: 'image'},
             multiple: false
@@ -213,7 +215,7 @@ jQuery(function ($) {
     $currency.on('change', function () {
         $formats.find('option').each(function () {
             var decimals = this.value.match(/{price\|(\d)}/)[1],
-                price    = BooklyL10n.sample_price
+                price = BooklyL10n.sample_price
             ;
             if (decimals < 3) {
                 price = price.slice(0, -(decimals == 0 ? 4 : 3 - decimals));
@@ -292,7 +294,9 @@ jQuery(function ($) {
     });
 
     // URL tab.
-    if ($finalStepUrl.find('input').val()) { $finalStepUrlMode.val(1); }
+    if ($finalStepUrl.find('input').val()) {
+        $finalStepUrlMode.val(1);
+    }
     $finalStepUrlMode.change(function () {
         if (this.value == 0) {
             $finalStepUrl.hide().find('input').val('');
@@ -305,19 +309,19 @@ jQuery(function ($) {
     var d = new Date();
     $('.bookly-js-annual-calendar').jCal({
         day: new Date(d.getFullYear(), 0, 1),
-        days:       1,
+        days: 1,
         showMonths: 12,
         scrollSpeed: 350,
-        events:     BooklyL10n.holidays,
-        action:     'bookly_settings_holiday',
-        csrf_token: BooklyL10n.csrf_token,
-        dayOffset:  parseInt(BooklyL10n.firstDay),
+        events: BooklyL10n.holidays,
+        action: 'bookly_settings_holiday',
+        csrf_token: BooklyL10nGlobal.csrf_token,
+        dayOffset: parseInt(BooklyL10n.firstDay),
         loadingImg: BooklyL10n.loading_img,
-        dow:        BooklyL10n.days,
-        ml:         BooklyL10n.months,
+        dow: BooklyL10n.days,
+        ml: BooklyL10n.months,
         we_are_not_working: BooklyL10n.we_are_not_working,
-        repeat:     BooklyL10n.repeat,
-        close:      BooklyL10n.close
+        repeat: BooklyL10n.repeat,
+        close: BooklyL10n.close
     });
     $('.bookly-js-jCalBtn').on('click', function (e) {
         e.preventDefault();
@@ -346,7 +350,7 @@ jQuery(function ($) {
 
     // Change link to Help page according to activated tab.
     let help_link = $helpBtn.attr('href');
-    $('#bookly-sidebar a[data-toggle="bookly-pill"]').on('shown.bs.tab', function(e) {
+    $('#bookly-sidebar a[data-toggle="bookly-pill"]').on('shown.bs.tab', function (e) {
         $helpBtn.attr('href', help_link + e.target.getAttribute('href').substring(1).replace(/_/g, '-'));
     });
 
@@ -354,23 +358,23 @@ jQuery(function ($) {
     $('a[href="#bookly_settings_' + BooklyL10n.current_tab + '"]').booklyTab('show');
 
     // Logs
-    $('#bookly_logs_enabled').on('change', function() {
-        $('#bookly-logs-table-wrap').toggle($(this).find('option:selected').val() === '1');
+    $('#bookly_logs_enabled').on('change', function () {
+        $('#bookly-logs-table-wrap', container.$log).toggle($(this).find('option:selected').val() === '1');
     }).trigger('change');
 
-    $('#bookly-delete-logs').on('click', function (){
+    $('#bookly-delete-logs').on('click', function () {
         if (confirm(BooklyL10n.are_you_sure)) {
             var ladda = Ladda.create(this);
             ladda.start();
             $.ajax({
-                url  : ajaxurl,
-                type : 'POST',
-                data : {
-                    action     : 'bookly_delete_logs',
-                    csrf_token : BooklyL10n.csrf_token,
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'bookly_delete_logs',
+                    csrf_token: BooklyL10nGlobal.csrf_token,
                 },
-                dataType : 'json',
-                success  : function() {
+                dataType: 'json',
+                success: function () {
                     ladda.stop();
                     dt.ajax.reload();
                 }
@@ -379,42 +383,42 @@ jQuery(function ($) {
     });
 
     let pickers = {
-        dateFormat:     'YYYY-MM-DD',
+        dateFormat: 'YYYY-MM-DD',
         creationDate: {
             startDate: moment().subtract(30, 'days'),
-            endDate  : moment(),
+            endDate: moment(),
         },
     };
     var picker_ranges = {};
     picker_ranges[BooklyL10n.dateRange.yesterday] = [moment().subtract(1, 'days'), moment().subtract(1, 'days')];
-    picker_ranges[BooklyL10n.dateRange.today]     = [moment(), moment()];
-    picker_ranges[BooklyL10n.dateRange.last_7]    = [moment().subtract(7, 'days'), moment()];
-    picker_ranges[BooklyL10n.dateRange.last_30]   = [moment().subtract(30, 'days'), moment()];
+    picker_ranges[BooklyL10n.dateRange.today] = [moment(), moment()];
+    picker_ranges[BooklyL10n.dateRange.last_7] = [moment().subtract(7, 'days'), moment()];
+    picker_ranges[BooklyL10n.dateRange.last_30] = [moment().subtract(30, 'days'), moment()];
     picker_ranges[BooklyL10n.dateRange.thisMonth] = [moment().startOf('month'), moment().endOf('month')];
     picker_ranges[BooklyL10n.dateRange.lastMonth] = [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')];
 
     $logsDateFilter.daterangepicker({
-            parentEl       : $logsDateFilter.closest('.card-body'),
-            startDate      : pickers.creationDate.startDate,
-            endDate        : pickers.creationDate.endDate,
-            ranges         : picker_ranges,
-            showDropdowns  : true,
+            parentEl: $logsDateFilter.closest('.card-body'),
+            startDate: pickers.creationDate.startDate,
+            endDate: pickers.creationDate.endDate,
+            ranges: picker_ranges,
+            showDropdowns: true,
             linkedCalendars: false,
             autoUpdateInput: false,
-            locale         : $.extend({}, BooklyL10n.dateRange, BooklyL10n.datePicker)
+            locale: $.extend({}, BooklyL10n.dateRange, BooklyL10n.datePicker)
         },
         function (start, end) {
             $logsDateFilter
-            .data('date', start.format(pickers.dateFormat) + ' - ' + end.format(pickers.dateFormat))
-            .find('span')
-            .html(start.format(BooklyL10n.dateRange.format) + ' - ' + end.format(BooklyL10n.dateRange.format));
+                .data('date', start.format(pickers.dateFormat) + ' - ' + end.format(pickers.dateFormat))
+                .find('span')
+                .html(start.format(BooklyL10n.dateRange.format) + ' - ' + end.format(BooklyL10n.dateRange.format));
         }
     );
 
     var dt = $logsTable.DataTable({
         order: [0],
         info: false,
-        paging    : true,
+        paging: true,
         searching: false,
         lengthChange: false,
         processing: true,
@@ -426,9 +430,10 @@ jQuery(function ($) {
             url: ajaxurl,
             type: 'POST',
             data: function (d) {
-                return $.extend({action: 'bookly_get_logs', csrf_token: BooklyL10n.csrf_token}, {
+                return $.extend({action: 'bookly_get_logs', csrf_token: BooklyL10nGlobal.csrf_token}, {
                     filter: {
                         created_at: $logsDateFilter.data('date'),
+                        search: $logsSearch.val()
                     }
                 }, d);
             }
@@ -443,7 +448,7 @@ jQuery(function ($) {
                 data: 'details',
                 render: function (data, type, row, meta) {
                     try {
-                        return JSON.stringify(JSON.parse(data), null, 2).replace(/\n/g, "<br/>");
+                        return JSON.stringify(JSON.parse(data), null, 2).replace(/\n/g, '<br/>');
                     } catch (e) {
                         return data;
                     }
@@ -460,7 +465,16 @@ jQuery(function ($) {
         }
     });
 
-    $logsDateFilter.on('apply.daterangepicker', function () { dt.ajax.reload(); });
+    $logsDateFilter.on('apply.daterangepicker', function () {dt.ajax.reload();});
+    $logsSearch.on('keyup', function () {
+        dt.search(this.value).draw();
+    })
+    .on('keydown', function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
     // Tab calendar
     $coloringMode
@@ -475,7 +489,7 @@ jQuery(function ($) {
         $jquery_collection.wpColorPicker();
         $jquery_collection.each(function () {
             $(this).data('last-color', $(this).val());
-            $('.wp-color-result-text',$(this).closest('.bookly-color-picker')).html($(this).data('title'));
+            $('.wp-color-result-text', $(this).closest('.bookly-color-picker')).text($(this).data('title'));
         });
     }
 

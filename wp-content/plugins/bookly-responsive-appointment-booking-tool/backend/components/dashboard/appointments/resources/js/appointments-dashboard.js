@@ -51,19 +51,19 @@ jQuery(function ($) {
         }
     };
 
-    var $container  = $('.bookly-js-dashboard-appointments'),
+    var $container = $('.bookly-js-dashboard-appointments'),
         $dateFilter = $('select#bookly-filter-date', $container),
-        totals  = {
+        totals = {
             $approved: $('.bookly-js-approved', $container),
-            $pending : $('.bookly-js-pending',  $container),
-            $total   : $('.bookly-js-total',    $container),
-            $revenue : $('.bookly-js-revenue',  $container),
+            $pending: $('.bookly-js-pending', $container),
+            $total: $('.bookly-js-total', $container),
+            $revenue: $('.bookly-js-revenue', $container),
         },
-        href    = {
+        href = {
             $approved: $('.bookly-js-href-approved', $container),
-            $pending : $('.bookly-js-href-pending',  $container),
-            $total   : $('.bookly-js-href-total',    $container),
-            $revenue : $('.bookly-js-href-revenue',  $container),
+            $pending: $('.bookly-js-href-pending', $container),
+            $total: $('.bookly-js-href-total', $container),
+            $revenue: $('.bookly-js-href-revenue', $container),
         },
         revenue = {
             label: BooklyAppointmentsWidgetL10n.revenue,
@@ -71,58 +71,61 @@ jQuery(function ($) {
             backgroundColor: 'rgba(255, 99, 132, 0.5)',
             fill: true,
             data: [],
-            yAxisID: 'y-axis-1',
+            yAxisID: 'yl',
         },
-        total   = {
+        total = {
             label: BooklyAppointmentsWidgetL10n.appointments,
             borderColor: 'rgb(201, 203, 207)',
             backgroundColor: 'rgba(201, 203, 207, 0.5)',
             fill: true,
             data: [],
-            yAxisID: 'y-axis-2'
+            yAxisID: 'yr'
         };
 
-    var chart = Chart.Line(document.getElementById('canvas').getContext('2d'), {
+    const chart = new Chart(document.getElementById('canvas').getContext('2d'), {
+        type: 'line',
         data: {
             labels: [],
             datasets: [revenue, total]
         },
         options: {
             responsive: true,
-            hoverMode : 'index',
-            stacked   : false,
-            title     : {
+            hoverMode: 'index',
+            stacked: false,
+            title: {
                 display: false,
             },
+            animation: false,
             elements: {
                 line: {
                     tension: 0.01
                 }
             },
             scales: {
-                yAxes: [{
+                yl: {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    id: 'y-axis-1',
-                    scaleLabel: {
-                        labelString: BooklyAppointmentsWidgetL10n.revenue + ' ('+ BooklyAppointmentsWidgetL10n.currency +')',
+                    title: {
                         display: true,
-                    }
-                }, {
+                        text: BooklyAppointmentsWidgetL10n.revenue + ' (' + BooklyAppointmentsWidgetL10n.currency + ')'
+                    },
+                },
+                yr: {
                     type: 'linear',
                     display: true,
                     position: 'right',
-                    id: 'y-axis-2',
-                    scaleLabel: {
-                        labelString: BooklyAppointmentsWidgetL10n.appointments,
+                    title: {
+                        text: BooklyAppointmentsWidgetL10n.appointments,
                         display: true,
                     }
-                }],
+                },
             },
-            legend: {
-                position: 'bottom',
-            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+            }
         }
     });
 

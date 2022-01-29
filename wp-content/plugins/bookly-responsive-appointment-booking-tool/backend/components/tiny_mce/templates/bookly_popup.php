@@ -5,7 +5,7 @@
             <?php static::renderTemplate( 'bookly_form' ) ?>
             <tr>
                 <td></td>
-                <td>
+                <td class='wp-core-ui'>
                     <button class="button button-primary bookly-js-insert-shortcode" type="button"><?php esc_html_e( 'Insert', 'bookly' ) ?></button>
                 </td>
             </tr>

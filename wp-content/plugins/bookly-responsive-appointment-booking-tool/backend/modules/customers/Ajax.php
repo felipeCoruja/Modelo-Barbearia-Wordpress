@@ -67,7 +67,7 @@ class Ajax extends Lib\Base\Ajax
             $search_value   = Lib\Query::escape( $filter );
             $search_columns = array( 'c.info_fields LIKE "%%%s%"' );
             foreach ( $columns as $column ) {
-                if ( in_array( $column['data'], array( 'first_name', 'last_name', 'full_name', 'phone', 'email' ) ) ) {
+                if ( in_array( $column['data'], array( 'first_name', 'last_name', 'full_name', 'phone', 'email', 'id' ) ) ) {
                     $search_columns[] = 'c.' . $column['data'] . ' LIKE "%%%s%"';
                 }
             }
@@ -89,6 +89,19 @@ class Ajax extends Lib\Base\Ajax
 
             $address = Lib\Proxy\Pro::getFullAddressByCustomerData( $row );
 
+            if ( $row['birthday'] !== null ) {
+                $birthday = date_create( $row['birthday'] );
+                if ( $birthday->format( 'Y' ) === '0000' ) {
+                    $date_format = str_replace( array( 'y', 'Y' ), '', get_option( 'date_format' ) );
+                    $birthday_formatted = date_i18n( $date_format, $birthday->getTimestamp() );
+                    $birthday->modify( '+ 1900 years' );
+                } else {
+                    $birthday_formatted = Lib\Utils\DateTime::formatDate( $birthday->format( 'Y-m-d' ) );
+                }
+            } else {
+                $birthday_formatted = $birthday = null;
+            }
+
             $customer_data = array(
                 'id'                 => $row['id'],
                 'wp_user_id'         => $row['wp_user_id'],
@@ -109,7 +122,8 @@ class Ajax extends Lib\Base\Ajax
                 'additional_address' => $row['additional_address'],
                 'address'            => $address,
                 'notes'              => $row['notes'],
-                'birthday'           => $row['birthday'] !== null && date_create( $row['birthday'] )->format( 'Y' ) == '0000' ? date_create( $row['birthday'] )->modify( '+ 1900 years' )->format( 'Y-m-d' ) : $row['birthday'],
+                'birthday'           => $birthday ? $birthday->format( 'Y-m-d' ) : null,
+                'birthday_formatted' => $birthday_formatted,
                 'last_appointment'   => $row['last_appointment'] ? Lib\Utils\DateTime::formatDateTime( $row['last_appointment'] ) : '',
                 'total_appointments' => $row['total_appointments'],
                 'payments'           => Lib\Utils\Price::format( $row['payments'] ),

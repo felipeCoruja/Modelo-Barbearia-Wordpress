@@ -30,10 +30,7 @@ class Ajax extends Page
         $one_day    = new \DateInterval( 'P1D' );
         $start_date = new \DateTime( self::parameter( 'start' ) );
         $end_date   = new \DateTime( self::parameter( 'end' ) );
-        $location_ids = self::parameter( 'location_ids', '' );
-        if ( $location_ids ) {
-            $location_ids = array_map( 'intval', explode( ',', $location_ids ) );
-        }
+        $location_ids = explode( ',', self::parameter( 'location_ids', '' ) );
 
         // Determine display time zone
         $display_tz = Common::getCurrentUserTimeZone();
@@ -63,13 +60,16 @@ class Ajax extends Page
             $staff_ids = array_map( function ( $staff ) { return $staff->getId(); }, $staff_members );
             $schedule  = Lib\Proxy\SpecialDays::getSchedule( $staff_ids, $start_date, $end_date ) ?: array();
             foreach ( $schedule as $day ) {
-                if ( $location_ids == '' || in_array( $day['location_id'], $location_ids ) ) {
+                $staff_location_ids = array_unique( array_map( function ( $l ) use ( $day ) { return Lib\Proxy\Locations::prepareStaffLocationId( $l, $day['staff_id'] ); }, $location_ids ) );
+                if ( $location_ids == '' || $location_ids == 'all' || in_array( $day['location_id'], $staff_location_ids ) ) {
                     $special_days[ $day['staff_id'] ][ $day['date'] ][] = $day;
                 }
             }
 
             foreach ( $staff_members as $staff ) {
-                $result = array_merge( $result, self::_getAppointmentsForCalendar( $staff->getId(), $start_date, $end_date, $display_tz ) );
+                $query = self::getAppointmentsQueryForCalendar( $staff->getId(), $start_date, $end_date, $location_ids );
+                $appointments = self::buildAppointmentsForCalendar( $query, $staff->getId(), $display_tz );
+                $result = array_merge( $result, $appointments );
 
                 // Schedule
                 $schedule = array();
@@ -108,7 +108,7 @@ class Ajax extends Page
                                 );
                                 $schedule[] = array(
                                     'start' => $break_start,
-                                    'end'   => $break_end,
+                                    'end' => $break_end,
                                 );
                             }
                         }
@@ -188,15 +188,15 @@ class Ajax extends Page
     }
 
     /**
-     * Get appointments for Event Calendar
+     * Get appointments query for Event Calendar
      *
      * @param int $staff_id
      * @param \DateTime $start_date
      * @param \DateTime $end_date
-     * @param string $display_tz
-     * @return array
+     * @param array|null $location_ids
+     * @return Lib\Query
      */
-    private static function _getAppointmentsForCalendar( $staff_id, \DateTime $start_date, \DateTime $end_date, $display_tz )
+    public static function getAppointmentsQueryForCalendar( $staff_id, \DateTime $start_date, \DateTime $end_date, $location_ids )
     {
         $query = Lib\Entities\Appointment::query( 'a' )
             ->where( 'st.id', $staff_id )
@@ -205,14 +205,14 @@ class Ajax extends Page
 
         $service_ids = array_filter( explode( ',', self::parameter( 'service_ids' ) ) );
 
-        if ( !empty( $service_ids ) && !in_array( 'all', $service_ids ) ) {
+        if ( ! empty( $service_ids ) && ! in_array( 'all', $service_ids ) ) {
             $raw_where = array();
             if ( in_array( 'custom', $service_ids ) ) {
                 $raw_where[] = 'a.service_id IS NULL';
             }
 
             $service_ids = array_filter( $service_ids, 'is_numeric' );
-            if ( !empty( $service_ids ) ) {
+            if ( ! empty( $service_ids ) ) {
                 $raw_where[] = 'a.service_id IN (' . implode( ',', $service_ids ) . ')';
             }
 
@@ -221,8 +221,8 @@ class Ajax extends Page
             }
         }
 
-        Proxy\Shared::prepareAppointmentsQueryForCalendar( $query, $staff_id, $start_date, $end_date );
+        Proxy\Shared::prepareAppointmentsQueryForCalendar( $query, $staff_id, $start_date, $end_date, $location_ids );
 
-        return self::buildAppointmentsForCalendar( $query, $staff_id, $display_tz );
+        return $query;
     }
 }

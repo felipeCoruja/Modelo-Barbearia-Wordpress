@@ -48,6 +48,7 @@ class Page extends Lib\Base\Ajax
                     update_option( 'bookly_cal_show_only_staff_with_appointments', self::parameter( 'bookly_cal_show_only_staff_with_appointments' ) );
                     update_option( 'bookly_cal_one_participant', self::parameter( 'bookly_cal_one_participant' ) );
                     update_option( 'bookly_cal_many_participants', self::parameter( 'bookly_cal_many_participants' ) );
+                    update_option( 'bookly_cal_month_view_style', self::parameter( 'bookly_cal_month_view_style' ) );
                     update_option( 'bookly_cal_coloring_mode', self::parameter( 'bookly_cal_coloring_mode' ) );
                     foreach ( self::parameter( 'status' ) as $status => $color ) {
                         if ( in_array( $status, array( CustomerAppointment::STATUS_PENDING, CustomerAppointment::STATUS_APPROVED, CustomerAppointment::STATUS_CANCELLED, CustomerAppointment::STATUS_REJECTED, 'mixed' ) ) ) {
@@ -89,6 +90,7 @@ class Page extends Lib\Base\Ajax
                     update_option( 'bookly_gen_show_powered_by', self::parameter( 'bookly_gen_show_powered_by' ) );
                     update_option( 'bookly_gen_prevent_caching', (int) self::parameter( 'bookly_gen_prevent_caching' ) );
                     update_option( 'bookly_gen_prevent_session_locking', (int) self::parameter( 'bookly_gen_prevent_session_locking' ) );
+                    update_option( 'bookly_gen_badge_consider_news', (int) self::parameter( 'bookly_gen_badge_consider_news' ) );
                     $alert['success'][] = __( 'Settings saved.', 'bookly' );
                     break;
                 case 'url': // URL settings form.
@@ -125,6 +127,8 @@ class Page extends Lib\Base\Ajax
                     update_option( 'bookly_co_name', self::parameter( 'bookly_co_name' ) );
                     update_option( 'bookly_co_phone', self::parameter( 'bookly_co_phone' ) );
                     update_option( 'bookly_co_website', self::parameter( 'bookly_co_website' ) );
+                    update_option( 'bookly_co_industry', self::parameter( 'bookly_co_industry' ) );
+                    update_option( 'bookly_co_size', self::parameter( 'bookly_co_size' ) );
                     $alert['success'][] = __( 'Settings saved.', 'bookly' );
                     break;
                 case 'logs':  // Logs form.
@@ -137,36 +141,24 @@ class Page extends Lib\Base\Ajax
             $alert = Proxy\Shared::saveSettings( $alert, self::parameter( 'tab' ), self::postParameters() );
         }
 
-        // Check if WooCommerce cart exists.
-        if ( get_option( 'bookly_wc_enabled' ) && class_exists( 'WooCommerce', false ) ) {
-            $post = get_post( wc_get_page_id( 'cart' ) );
-            if ( $post === null || $post->post_status != 'publish' ) {
-                $alert['error'][] = sprintf(
-                    __( 'WooCommerce cart is not set up. Follow the <a href="%s">link</a> to correct this problem.', 'bookly' ),
-                    Lib\Utils\Common::escAdminUrl( 'wc-status', array( 'tab' => 'tools' ) )
-                );
-            }
-        }
-
         Proxy\Shared::enqueueAssets();
 
         wp_localize_script( 'bookly-settings.js', 'BooklyL10n', array(
-            'alert'              => $alert,
-            'current_tab'        => $current_tab,
-            'csrf_token'         => Lib\Utils\Common::getCsrfToken(),
-            'default_country'    => get_option( 'bookly_cst_phone_default_country' ),
-            'holidays'           => self::_getHolidays(),
-            'loading_img'        => plugins_url( 'bookly-responsive-appointment-booking-tool/backend/resources/images/loading.gif' ),
-            'firstDay'           => get_option( 'start_of_week' ),
-            'days'               => array_values( $wp_locale->weekday_abbrev ),
-            'months'             => array_values( $wp_locale->month ),
-            'close'              => __( 'Close', 'bookly' ),
-            'repeat'             => __( 'Repeat every year', 'bookly' ),
+            'alert' => $alert,
+            'current_tab' => $current_tab,
+            'default_country' => get_option( 'bookly_cst_phone_default_country' ),
+            'holidays' => self::_getHolidays(),
+            'loading_img' => plugins_url( 'bookly-responsive-appointment-booking-tool/backend/resources/images/loading.gif' ),
+            'firstDay' => get_option( 'start_of_week' ),
+            'days' => array_values( $wp_locale->weekday_abbrev ),
+            'months' => array_values( $wp_locale->month ),
+            'close' => __( 'Close', 'bookly' ),
+            'repeat' => __( 'Repeat every year', 'bookly' ),
             'we_are_not_working' => __( 'We are not working on this day', 'bookly' ),
-            'sample_price'       => number_format_i18n( 10, 3 ),
-            'are_you_sure'       => __( 'Are you sure?', 'bookly' ),
-            'datePicker'         => Lib\Utils\DateTime::datePickerOptions(),
-            'dateRange'          => Lib\Utils\DateTime::dateRangeOptions( array( 'lastMonth' => __( 'Last month', 'bookly' ), ) ),
+            'sample_price' => number_format_i18n( 10, 3 ),
+            'are_you_sure' => __( 'Are you sure?', 'bookly' ),
+            'datePicker' => Lib\Utils\DateTime::datePickerOptions(),
+            'dateRange' => Lib\Utils\DateTime::dateRangeOptions( array( 'lastMonth' => __( 'Last month', 'bookly' ), ) ),
         ) );
         $values = array();
         foreach ( array( 5, 10, 12, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360 ) as $duration ) {

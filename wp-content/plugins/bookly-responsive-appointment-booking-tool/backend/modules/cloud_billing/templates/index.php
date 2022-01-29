@@ -41,7 +41,7 @@ use Bookly\Lib;
                 <tr>
                     <?php foreach ( $datatables['cloud_purchases']['settings']['columns'] as $column => $show ) : ?>
                         <?php if ( $show ) : ?>
-                            <th><?php echo $datatables['cloud_purchases']['titles'][ $column ] ?></th>
+                            <th><?php echo esc_html( $datatables['cloud_purchases']['titles'][ $column ] ) ?></th>
                         <?php endif ?>
                     <?php endforeach ?>
                     <th></th>

@@ -133,7 +133,7 @@ class Select
         );
 
         if ( $echo ) {
-            echo $html;
+            echo Lib\Utils\Common::stripScripts( $html );
         } else {
             return $html;
         }

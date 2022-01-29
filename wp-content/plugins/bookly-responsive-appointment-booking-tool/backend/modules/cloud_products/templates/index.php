@@ -25,16 +25,16 @@ $update_required_modal = false;
                 </div>
             </div>
             <?php foreach ( $products as $product ) : ?>
-                <div class="card bg-light p-3 mb-3 bookly-js-cloud-product" data-product="<?php echo $product['id'] ?>">
+                <div class="card bg-light p-3 mb-3 bookly-js-cloud-product" data-product="<?php echo esc_attr( $product['id'] ) ?>">
                     <div class="form-row">
                         <div class="col-xl-9 col-md-8 col-xs-12">
                             <div class="d-flex">
                                 <div class="mr-4 mb-4">
-                                    <img src="<?php echo $product['icon_url'] ?>" alt="<?php echo esc_attr( $product['texts']['title'] ) ?>" />
+                                    <img src="<?php echo esc_attr( $product['icon_url'] ) ?>" alt="<?php echo esc_attr( $product['texts']['title'] ) ?>"/>
                                 </div>
                                 <div class="flex-fill">
-                                    <div class="h4 mb-2"><?php echo $product['texts']['title'] ?></div>
-                                    <?php echo $product['texts']['description'] ?>
+                                    <div class="h4 mb-2"><?php echo Lib\Utils\Common::stripScripts( $product['texts']['title'] ) ?></div>
+                                    <?php echo Lib\Utils\Common::stripScripts( $product['texts']['description'] ) ?>
                                     <?php if ( $product['button'] ) : ?>
                                         <div>
                                             <?php Controls\Buttons::render( null, 'btn-white border text-nowrap bookly-js-product-info-button mt-2', $product['texts']['info-button'] ); ?>

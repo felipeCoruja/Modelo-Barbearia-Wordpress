@@ -46,6 +46,7 @@ class Settings
             case Notification::TYPE_CUSTOMER_NEW_WP_USER:
             case Notification::TYPE_STAFF_NEW_WP_USER:
             case Notification::TYPE_STAFF_WAITING_LIST:
+            case Notification::TYPE_FREE_PLACE_WAITING_LIST:
             case Notification::TYPE_VERIFY_PHONE:
             case Notification::TYPE_VERIFY_EMAIL:
                 $this->instant = 1;

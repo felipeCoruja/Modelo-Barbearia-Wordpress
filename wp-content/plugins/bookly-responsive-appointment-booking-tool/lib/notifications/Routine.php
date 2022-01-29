@@ -593,12 +593,15 @@ abstract class Routine
         // Disable caching.
         Lib\Utils\Common::noCache( true );
 
+        $original_timezone = date_default_timezone_get();
+
+        // @codingStandardsIgnoreStart
         date_default_timezone_set( 'UTC' );
 
-        self::$date_point  = Lib\Slots\DatePoint::now();
-        self::$today       = Lib\Slots\DatePoint::fromStr( 'today' );
+        self::$date_point = Lib\Slots\DatePoint::now();
+        self::$today = Lib\Slots\DatePoint::fromStr( 'today' );
         self::$mysql_today = self::$today->format( 'Y-m-d' );
-        self::$hours       = self::$date_point->format( 'H' );
+        self::$hours = self::$date_point->format( 'H' );
         self::$processing_interval = (int) get_option( 'bookly_ntf_processing_interval' );
 
         // Custom notifications.
@@ -613,5 +616,8 @@ abstract class Routine
                 self::processNotification( $notification );
             }
         }
+        
+        date_default_timezone_set( $original_timezone );
+        // @codingStandardsIgnoreEnd
     }
 }

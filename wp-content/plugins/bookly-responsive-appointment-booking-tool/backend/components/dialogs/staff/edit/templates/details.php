@@ -12,8 +12,8 @@ use Bookly\Lib\Config;
                 <div class="form-group">
                     <?php $img = wp_get_attachment_image_src( $staff->getAttachmentId(), 'thumbnail' ) ?>
 
-                    <div class="bookly-js-image bookly-thumb<?php echo $img ? ' bookly-thumb-with-image' : '' ?>"
-                        <?php echo $img ? 'style="background-image: url(' . $img[0] . '); background-size: cover;"' : '' ?>
+                    <div class="bookly-js-image bookly-thumb<?php echo esc_attr( $img ? ' bookly-thumb-with-image' : '' ) ?>"
+                         style="<?php echo esc_attr( $img ? 'background-image: url(' . $img[0] . '); background-size: cover;' : '' ) ?>"
                     >
                         <i class="fas fa-fw fa-4x fa-camera mt-2 text-white w-100"></i>
                         <a class="far fa-fw fa-trash-alt text-danger bookly-thumb-delete bookly-js-delete"
@@ -46,7 +46,7 @@ use Bookly\Lib\Config;
                 <option value=""><?php esc_html_e( 'Select from WordPress users', 'bookly' ) ?></option>
                 <?php Proxy\Pro::renderCreateWPUser() ?>
                 <?php foreach ( $users_for_staff as $user ) : ?>
-                    <option value="<?php echo $user->ID ?>" data-email="<?php echo $user->user_email ?>" <?php selected( $user->ID, $staff->getWpUserId() ) ?>><?php echo $user->display_name ?></option>
+                    <option value="<?php echo esc_attr( $user->ID ) ?>" data-email="<?php echo esc_attr( $user->user_email ) ?>" <?php selected( $user->ID, $staff->getWpUserId() ) ?>><?php echo esc_html( $user->display_name ) ?></option>
                 <?php endforeach ?>
             </select>
             <small class="form-text text-muted">
@@ -99,20 +99,20 @@ use Bookly\Lib\Config;
         </div>
         <?php if ( Config::proActive() || $staff->getVisibility() === 'archive' ) : ?>
             <div class="custom-control custom-radio">
-                <input type="radio" name="visibility" id="bookly-visibility-archive" value="archive" <?php checked( $staff->getVisibility(), 'archive' ) ?> class="custom-control-input" />
+                <input type="radio" name="visibility" id="bookly-visibility-archive" value="archive" <?php checked( $staff->getVisibility(), 'archive' ) ?> class="custom-control-input"/>
                 <label for="bookly-visibility-archive" class="custom-control-label"><?php esc_html_e( 'Archive', 'bookly' ) ?></label>
             </div>
         <?php endif ?>
         <small class="form-text text-muted"><?php esc_html_e( 'To make staff member invisible to your customers set the visibility to "Private".', 'bookly' ) ?></small>
     </div>
     <?php Proxy\Shared::renderStaffDetails( $staff ) ?>
-    <input type="hidden" name="id" value="<?php echo $staff->getId() ?>">
-    <input type="hidden" name="attachment_id" value="<?php echo $staff->getAttachmentId() ?>">
+    <input type="hidden" name="id" value="<?php echo esc_attr( $staff->getId() ) ?>">
+    <input type="hidden" name="attachment_id" value="<?php echo esc_attr( $staff->getAttachmentId() ) ?>">
 
     <div class="bookly-js-modal-footer">
         <?php if ( Common::isCurrentUserAdmin() ) : ?>
             <?php Buttons::renderDelete( 'bookly-staff-delete' ) ?>
-            <?php Buttons::render( null, 'btn-danger ladda-button bookly-js-staff-archive', __( 'Archive', 'bookly' ), !Config::proActive() || $staff->getVisibility() == 'archive' ? array( 'style' => 'display:none;' ) : array(), '<i class="fas fa-fw fa-archive mr-1"></i>{caption}' ) ?>
+            <?php Buttons::render( null, 'btn-danger ladda-button bookly-js-staff-archive', __( 'Archive', 'bookly' ), ! Config::proActive() || $staff->getVisibility() == 'archive' ? array( 'style' => 'display:none;' ) : array(), '<i class="fas fa-fw fa-archive mr-1"></i>{caption}' ) ?>
         <?php endif ?>
         <?php Buttons::render( 'bookly-details-save', 'btn-success bookly-js-save', __( 'Save', 'bookly' ) ) ?>
     </div>

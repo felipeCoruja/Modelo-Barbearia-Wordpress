@@ -143,5 +143,4 @@ class Page extends Lib\Base\Component
         self::renderTemplate( 'index', compact( 'steps', 'custom_css', 'payment_options' ) );
     }
 
-
 }

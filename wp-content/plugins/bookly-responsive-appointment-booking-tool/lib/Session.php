@@ -23,7 +23,7 @@ abstract class Session
                     session_id( $_COOKIE[ session_name() ] );
                 } else {
                     self::start();
-                    setcookie( session_name(), session_id(), 0, '/', '', false, true );
+                    @setcookie( session_name(), session_id(), 0, '/', '', false, true );
                     self::writeClose();
                 }
             } elseif ( ! session_id() ) {

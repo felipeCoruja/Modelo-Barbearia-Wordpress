@@ -5,6 +5,7 @@ use Bookly\Lib;
 use Bookly\Frontend\Components\Booking\InfoText;
 use Bookly\Frontend\Modules\Booking\Lib\Steps;
 use Bookly\Frontend\Modules\Booking\Lib\Errors;
+use Bookly\Lib\Utils\Common;
 
 /**
  * Class Ajax
@@ -215,8 +216,9 @@ class Ajax extends Lib\Base\Ajax
 
             $show_blocked_slots = Lib\Config::showBlockedTimeSlots();
             $finder = new Lib\Slots\Finder( $userData );
-            $finder->setSelectedDate( self::parameter( 'selected_date', $userData->getDateFrom() ) );
+            $finder->setSelectedDate( Lib\Config::showSingleTimeSlot() ? null : self::parameter( 'selected_date', $userData->getDateFrom() ) );
             $slots_data = array();
+            $block_time_slots = false;
             while ( true ) {
                 $finder->prepare()->load();
                 foreach ( $finder->getSlots() as $group => $group_slots ) {
@@ -229,13 +231,20 @@ class Ajax extends Lib\Base\Ajax
                         $slots_data[ $group ]['slots'][] = array(
                             'data' => $slot->buildSlotData(),
                             'time_text' => $slot->start()->toClientTz()->formatI18n( $finder->isServiceDurationInDays() ? 'D, M d' : get_option( 'time_format' ) ),
-                            'status' => $slot->waitingListEverStarted() ? 'waiting-list' : ( $slot->fullyBooked() ? 'booked' : '' ),
+                            'status' => $block_time_slots ? 'booked' : ( $slot->waitingListEverStarted() ? 'waiting-list' : ( $slot->fullyBooked() ? 'booked' : '' ) ),
                             'additional_text' => $slot->waitingListEverStarted() ? '(' . $slot->maxOnWaitingList() . ')' : ( Lib\Config::groupBookingActive() ? Proxy\GroupBooking::getTimeSlotText( $slot ) : '' ),
+                            'slot' => $slot,
                         );
+                        if ( ! $slot->waitingListEverStarted() && $slot->notFullyBooked() && Lib\Config::showSingleTimeSlot() ) {
+                            $block_time_slots = true;
+                            if ( ! Lib\Config::showBlockedTimeSlots() ) {
+                                break;
+                            }
+                        }
                     }
                 }
                 if ( Lib\Config::showCalendar() && $find_first_free_slot ) {
-                    $select_next_month = empty( $slots_data );
+                    $select_next_month = empty( $slots_data ) || ( Lib\Config::showSingleTimeSlot() && ! $block_time_slots );
                     if ( ! $select_next_month && $show_blocked_slots ) {
                         foreach ( $slots_data as $group => $data ) {
                             foreach ( $data['slots'] as $slot ) {
@@ -269,6 +278,14 @@ class Ajax extends Lib\Base\Ajax
             $slots = $userData->getSlots();
             $selected_date = isset ( $slots[0][2] ) ? $slots[0][2] : null;
 
+            $slots_data = Proxy\Shared::prepareSlotsData( $slots_data );
+
+            $slots_data = array_map( function ( $slot_data ) {
+                unset ( $slot_data['slot'] );
+
+                return $slot_data;
+            }, $slots_data );
+
             // Set response.
             $response = Proxy\Shared::stepOptions( array(
                 'success' => true,
@@ -292,10 +309,27 @@ class Ajax extends Lib\Base\Ajax
             ), 'time' );
 
             if ( Lib\Config::showCalendar() ) {
-                $bounding = Lib\Config::getBoundingDaysForPickadate();
-                $response['date_max'] = $bounding['date_max'];
-                $response['date_min'] = $bounding['date_min'];
-                $response['disabled_days'] = $finder->getDisabledDaysForPickadate();
+                if ( Lib\Config::showSingleTimeSlot() ) {
+                    $date_with_slot = null;
+                    if ( ! empty ( $slots_data ) ) {
+                        $last_slot = end( $slots_data );
+                        if ( ! empty( $last_slot ) && isset( $last_slot['slots'][0] ) ) {
+                            $last_slot_date = date_create( $last_slot['slots'][0]['data'][0][2] );
+                            $date_with_slot = array(
+                                $last_slot_date->format( 'Y' ) + 0,
+                                $last_slot_date->format( 'n' ) - 1,
+                                $last_slot_date->format( 'j' ) + 0,
+                            );
+                        }
+                        $response['date_max'] = $date_with_slot;
+                        $response['date_min'] = $date_with_slot;
+                    }
+                } else {
+                    $bounding = Lib\Config::getBoundingDaysForPickadate();
+                    $response['date_max'] = $bounding['date_max'];
+                    $response['date_min'] = $bounding['date_min'];
+                    $response['disabled_days'] = $finder->getDisabledDaysForPickadate();
+                }
             }
         } else {
             $response = array( 'success' => false, 'error' => Errors::SESSION_ERROR );
@@ -336,9 +370,18 @@ class Ajax extends Lib\Base\Ajax
                         'time_text' => $slot->start()->toClientTz()->formatI18n( $finder->isServiceDurationInDays() ? 'D, M d' : get_option( 'time_format' ) ),
                         'status' => $slot->waitingListEverStarted() ? 'waiting-list' : ( $slot->fullyBooked() ? 'booked' : '' ),
                         'additional_text' => $slot->waitingListEverStarted() ? '(' . $slot->maxOnWaitingList() . ')' : ( Lib\Config::groupBookingActive() ? Proxy\GroupBooking::getTimeSlotText( $slot ) : '' ),
+                        'slot' => $slot,
                     );
                 }
             }
+
+            $slots_data = Proxy\Shared::prepareSlotsData( $slots_data );
+
+            $slots_data = array_map( function ( $slot_data ) {
+                unset ( $slot_data['slot'] );
+
+                return $slot_data;
+            }, $slots_data );
 
             // Set response.
             $response = array(
@@ -526,8 +569,11 @@ class Ajax extends Lib\Base\Ajax
                     'enabled' => 0,
                 ),
                 'woocommerce' => array(
-                    'enabled'  => $woocommerce_enabled,
+                    'enabled' => $woocommerce_enabled,
                     'cart_url' => $woocommerce_enabled ? wc_get_cart_url() : '',
+                ),
+                'l10n' => array(
+                    'terms_error' => Lib\Utils\Common::getTranslatedOption( 'bookly_l10n_error_terms' ),
                 ),
             ), 'details' );
         } else {
@@ -577,89 +623,63 @@ class Ajax extends Lib\Base\Ajax
                 $payment_options  = array();
 
                 // Prepare info texts.
-                $cart_items_count = count( $userData->cart->getItems() );
                 if ( $payment_step === 'show' ) {
-                    $options = array();
-                    if ( Lib\Config::payLocallyEnabled() ) {
-                        $options['local'] = array(
-                            'html' => self::renderTemplate( '_payment_local', array( 'form_id' => self::parameter( 'form_id' ) ), false ),
-                            'pay'  => $cart_info->getPayNow(),
-                        );
-                    }
-                    $pay_cloud_stripe = Lib\Cloud\API::getInstance()->account->productActive( 'stripe' ) && get_option( 'bookly_cloud_stripe_enabled' );
-                    if ( $pay_cloud_stripe ) {
-                        $cart_info->setGateway( Lib\Entities\Payment::TYPE_CLOUD_STRIPE );
-                        $options['cloud_stripe'] = array(
-                            'html' => self::renderTemplate(
-                                '_cloud_stripe_option',
-                                array(
-                                    'form_id'         => self::parameter( 'form_id' ),
-                                    'url_cards_image' => plugins_url( 'frontend/resources/images/cards.png', Lib\Plugin::getMainFile() ),
-                                    'show_price'      => Lib\Proxy\Shared::showPaymentSpecificPrices( false ),
-                                    'cart_info'       => $cart_info,
-                                    'payment_status'  => $userData->extractPaymentStatus(),
-                                ),
-                                false
-                            ),
-                            'pay'  => $cart_info->getPayNow(),
-                        );
-                    }
-                    $options = Proxy\Shared::preparePaymentOptions(
-                        $options,
-                        self::parameter( 'form_id' ),
-                        Lib\Proxy\Shared::showPaymentSpecificPrices( false ),
-                        $cart_info,
-                        $userData->extractPaymentStatus()
-                    );
-                    $order = explode( ',', get_option( 'bookly_pmt_order' ) );
+                    $gateways = self::getGateways( $userData, $cart_info );
 
-                    if ( $order ) {
-                        foreach ( $order as $payment_system ) {
-                            if ( array_key_exists( $payment_system, $options ) ) {
-                                $payment_options[] = $options[ $payment_system ]['html'];
+                    if ( $gateways ) {
+                        $order = explode( ',', get_option( 'bookly_pmt_order' ) );
+
+                        if ( $order ) {
+                            foreach ( $order as $payment_system ) {
+                                if ( array_key_exists( $payment_system, $gateways ) ) {
+                                    $payment_options[ $payment_system ] = $gateways[ $payment_system ]['html'];
+                                }
                             }
                         }
-                    }
-                    foreach ( $options as $slug => $data ) {
-                        if ( ! $order || ! in_array( $slug, $order ) ) {
-                            if ( $data['pay'] == 0 ) {
-                                $payment_step = 'show-100%-discount';
-                                $payment_options = array();
-                                break;
+                        foreach ( $gateways as $slug => $data ) {
+                            if ( ! $order || ! in_array( $slug, $order ) ) {
+                                if ( $data['pay'] == 0 ) {
+                                    $payment_step = 'show-100%-discount';
+                                    $payment_options = array();
+                                    break;
+                                }
+                                $payment_options[ $slug ] = $data['html'];
                             }
-                            $payment_options[] = $data['html'];
                         }
+                    } else {
+                        $payment_step = 'payment-impossible';
                     }
-                } else {
-                    $pay_cloud_stripe = false;
                 }
 
-                if ( $payment_step === 'show-100%-discount' ) {
-                    $info_text_tpl = Lib\Utils\Common::getTranslatedOption( 'bookly_l10n_info_payment_step_with_100percents_off_price' );
+                if ( $payment_step === 'payment-impossible' ) {
+                    $html = Proxy\Pro::getHtmlPaymentImpossible( $progress_tracker, $userData );
                 } else {
-                    $info_text_tpl = Lib\Utils\Common::getTranslatedOption(
-                        $cart_items_count > 1
-                            ? 'bookly_l10n_info_payment_step_several_apps'
-                            : 'bookly_l10n_info_payment_step_single_app'
-                    );
-                }
+                    if ( $payment_step === 'show-100%-discount' ) {
+                        $info_text_tpl = Lib\Utils\Common::getTranslatedOption( 'bookly_l10n_info_payment_step_with_100percents_off_price' );
+                    } else {
+                        $info_text_tpl = Lib\Utils\Common::getTranslatedOption(
+                            count( $userData->cart->getItems() ) > 1
+                                ? 'bookly_l10n_info_payment_step_several_apps'
+                                : 'bookly_l10n_info_payment_step_single_app'
+                        );
+                    }
 
-                $info_text = InfoText::prepare( Steps::PAYMENT, $info_text_tpl, $userData );
-
-                // Set response.
-                $response = Proxy\Shared::stepOptions( array(
-                    'success'  => true,
-                    'disabled' => false,
-                    'html' => self::renderTemplate( '7_payment', array(
+                    $info_text = InfoText::prepare( Steps::PAYMENT, $info_text_tpl, $userData );
+                    $html = self::renderTemplate( '7_payment', array(
                         'form_id' => self::parameter( 'form_id' ),
                         'progress_tracker' => $progress_tracker,
                         'info_text' => $info_text,
-                        'pay_cloud_stripe' => $pay_cloud_stripe,
-                        'pay_local' => Lib\Config::payLocallyEnabled(),
                         'payment_options'  => $payment_options,
                         'page_url' => self::parameter( 'page_url' ),
                         'userData' => $userData,
-                    ), false ),
+                    ), false );
+                }
+
+                // Set response.
+                $response = Proxy\Shared::stepOptions( array(
+                    'success' => true,
+                    'disabled' => false,
+                    'html' => $html,
                     'stripe_publishable_key' => get_option( 'bookly_stripe_publishable_key' ),
                 ), 'payment' );
             } else {
@@ -801,9 +821,10 @@ class Ajax extends Lib\Base\Ajax
             if ( $failed_cart_key === null ) {
                 $cart_info = $userData->cart->getInfo();
                 $is_payment_disabled    = Lib\Config::paymentStepDisabled();
-                $is_pay_locally_enabled = Lib\Config::payLocallyEnabled();
                 $skip_payment = Lib\Proxy\CustomerGroups::getSkipPayment( $userData->getCustomer() );
-                if ( $is_payment_disabled || $is_pay_locally_enabled || $cart_info->getPayNow() <= 0 || $skip_payment ) {
+                $gateways = self::getGateways( $userData, $cart_info );
+
+                if ( $is_payment_disabled || isset( $gateways['local'] ) || $cart_info->getPayNow() <= 0 || $skip_payment ) {
                     // Handle coupon.
                     $coupon = $userData->getCoupon();
                     if ( $coupon ) {
@@ -825,16 +846,9 @@ class Ajax extends Lib\Base\Ajax
                             }
                         } else {
                             $payment = new Lib\Entities\Payment();
-                            $options = Proxy\Shared::preparePaymentOptions(
-                                array(),
-                                self::parameter( 'form_id' ),
-                                Lib\Proxy\Shared::showPaymentSpecificPrices( false ),
-                                clone $cart_info,
-                                $userData->extractPaymentStatus()
-                            );
                             $status = Lib\Entities\Payment::STATUS_PENDING;
                             $type   = Lib\Entities\Payment::TYPE_LOCAL;
-                            foreach ( $options as $gateway => $data ) {
+                            foreach ( $gateways as $gateway => $data ) {
                                 if ( $data['pay'] == 0 ) {
                                     $status = Lib\Entities\Payment::STATUS_COMPLETED;
                                     $type   = Lib\Entities\Payment::TYPE_FREE;
@@ -918,42 +932,13 @@ class Ajax extends Lib\Base\Ajax
         $customer_appointment = new Lib\Entities\CustomerAppointment();
 
         $allow_cancel = true;
-        if ( $customer_appointment->loadBy( array( 'token' => self::parameter( 'token' ) ) ) ) {
-            $appointment = new Lib\Entities\Appointment();
-            $minimum_time_prior_cancel = (int) Lib\Proxy\Pro::getMinimumTimePriorCancel( $appointment->getServiceId() );
-            if ( $minimum_time_prior_cancel > 0
-                 && $appointment->load( $customer_appointment->getAppointmentId() )
-                 && $appointment->getStartDate() !== null
-            ) {
-                $allow_cancel_time = strtotime( $appointment->getStartDate() ) - $minimum_time_prior_cancel;
-                if ( current_time( 'timestamp' ) > $allow_cancel_time ) {
-                    $allow_cancel = false;
-                }
-            }
-            if ( $customer_appointment->getStatus() == Lib\Entities\CustomerAppointment::STATUS_DONE ) {
-                $allow_cancel = false;
-            }
-            if ( $allow_cancel ) {
-                $customer_appointment->cancel( self::parameter( 'reason', '' ) );
-            }
+        if ( $customer_appointment->loadBy( array( 'token' => self::parameter( 'token' ) ) ) && $customer_appointment->cancelAllowed() ) {
+            $customer_appointment->cancel( self::parameter( 'reason', '' ) );
+        } else {
+            $allow_cancel = false;
         }
 
-        if ( $url = $allow_cancel ? get_option( 'bookly_url_cancel_page_url' ) : get_option( 'bookly_url_cancel_denied_page_url' ) ) {
-            wp_redirect( $url );
-            self::renderTemplate( 'redirection', compact( 'url' ) );
-            exit;
-        }
-
-        $url = home_url();
-        if ( isset ( $_SERVER['HTTP_REFERER'] ) ) {
-            if ( parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_HOST ) == parse_url( $url, PHP_URL_HOST ) ) {
-                // Redirect back if user came from our site.
-                $url = $_SERVER['HTTP_REFERER'];
-            }
-        }
-        wp_redirect( $url );
-        self::renderTemplate( 'redirection', compact( 'url' ) );
-        exit;
+        Lib\Utils\Common::cancelAppointmentRedirect( $allow_cancel );
     }
 
     /**
@@ -1006,7 +991,7 @@ class Ajax extends Lib\Base\Ajax
         }
 
         wp_redirect( $url );
-        self::renderTemplate( 'redirection', compact( 'url' ) );
+        Lib\Utils\Common::redirect( $url );
         exit ( 0 );
     }
 
@@ -1054,7 +1039,7 @@ class Ajax extends Lib\Base\Ajax
         }
 
         wp_redirect( $url );
-        self::renderTemplate( 'redirection', compact( 'url' ) );
+        Lib\Utils\Common::redirect( $url );
         exit ( 0 );
     }
 
@@ -1114,6 +1099,54 @@ class Ajax extends Lib\Base\Ajax
 
         // Output JSON response.
         wp_send_json( $response );
+    }
+
+    /**
+     * Download ICS file for order
+     */
+    public static function downloadIcs()
+    {
+        $userData = new Lib\UserBookingData( self::parameter( 'form_id' ) );
+
+        if ( $userData->load() && $userData->getOrderId() ) {
+            // Generate ICS feed.
+            $ics = new Lib\Utils\Ics\Feed();
+
+            $ca_ids = Lib\Entities\CustomerAppointment::query( 'ca' )
+                ->select( 'MIN(ca.id) AS id' )
+                ->where( 'ca.order_id', $userData->getOrderId() )
+                ->groupBy( 'COALESCE(ca.compound_token, ca.collaborative_token, ca.id)' )
+                ->fetchCol( 'id' );
+
+            $query = Proxy\Shared::prepareIcsQuery(
+                Lib\Entities\CustomerAppointment::query( 'ca' )
+                    ->select( 'COALESCE(ca.compound_service_id,ca.collaborative_service_id,a.service_id) AS service_id, a.custom_service_name, a.location_id, s.title AS service_title, a.start_date, a.end_date, st.full_name AS staff_name' )
+                    ->leftJoin( 'Appointment', 'a', 'a.id = ca.appointment_id' )
+                    ->leftJoin( 'Service', 's', 's.id = COALESCE(ca.compound_service_id,ca.collaborative_service_id,a.service_id)' )
+                    ->leftJoin( 'Staff', 'st', 'st.id = a.staff_id' )
+                    ->whereIn( 'ca.id', $ca_ids )
+            );
+
+            $appointments = $query->fetchArray();
+
+            foreach ( $appointments as $appointment ) {
+                if ( $appointment['service_id'] === null ) {
+                    $service_name = $appointment['custom_service_name'];
+                } else {
+                    $service_name = Common::getTranslatedString( 'service_' . $appointment['service_id'], $appointment['service_title'] );
+                }
+                $ics->addEvent( $appointment['start_date'], $appointment['end_date'], $service_name, sprintf( "%s\n%s", $service_name, $appointment['staff_name'] ), $appointment['location_id'] );
+            }
+
+            header( 'Content-Type: text/calendar' );
+            header( 'Content-Type: application/octet-stream', false );
+            header( 'Content-Disposition: attachment; filename="Bookly_' . $userData->getOrderId() . '.ics"' );
+            header( 'Content-Transfer-Encoding: binary' );
+
+            echo $ics->render();
+        }
+
+        exit();
     }
 
     /**
@@ -1200,10 +1233,10 @@ class Ajax extends Lib\Base\Ajax
                 'step'       => $step,
                 'skip_steps' => array(
                     'service' => Lib\Session::hasFormVar( self::parameter( 'form_id' ), 'skip_service_step' ),
-                    'extras'  => ! ( Lib\Config::serviceExtrasActive() && get_option( 'bookly_service_extras_enabled' ) ),
-                    'time'    => $skip_time_step,
-                    'repeat'  => $skip_time_step || ! Lib\Config::recurringAppointmentsActive() || ! get_option( 'bookly_recurring_appointments_enabled' ),
-                    'cart'    => ! Lib\Config::showStepCart(),
+                    'extras' => ! ( Lib\Config::serviceExtrasActive() && get_option( 'bookly_service_extras_enabled' ) ),
+                    'time' => $skip_time_step,
+                    'repeat' => $skip_time_step || ! Lib\Config::recurringAppointmentsActive() || ! get_option( 'bookly_recurring_appointments_enabled' ) || Lib\Config::showSingleTimeSlot(),
+                    'cart' => ! Lib\Config::showStepCart(),
                     'payment' => $skip_payment_step,
                 ),
                 // step extras before step time
@@ -1308,6 +1341,53 @@ class Ajax extends Lib\Base\Ajax
                 ->setTimeZoneOffset( $time_zone_offset )
                 ->applyTimeZone();
         }
+    }
+
+    /**
+     * Return suitable gateways for customer and all staff members
+     *
+     * @param Lib\UserBookingData $userData
+     * @param Lib\CartInfo $cart_info
+     * @return array
+     */
+    private static function getGateways( $userData, $cart_info )
+    {
+        $gateways = array();
+        if ( Lib\Config::payLocallyEnabled() && Proxy\CustomerGroups::allowedGateway( 'local', $userData ) !== false ) {
+            $gateways['local'] = array(
+                'html' => self::renderTemplate( '_payment_local', array( 'form_id' => self::parameter( 'form_id' ) ), false ),
+                'pay' => $cart_info->getPayNow(),
+            );
+        }
+        if ( Proxy\CustomerGroups::allowedGateway( 'cloud_stripe', $userData ) !== false ) {
+            $pay_cloud_stripe = Lib\Cloud\API::getInstance()->account->productActive( 'stripe' ) && get_option( 'bookly_cloud_stripe_enabled' );
+            if ( $pay_cloud_stripe ) {
+                $cart_info->setGateway( Lib\Entities\Payment::TYPE_CLOUD_STRIPE );
+                $gateways['cloud_stripe'] = array(
+                    'html' => self::renderTemplate(
+                        '_cloud_stripe_option',
+                        array(
+                            'form_id' => self::parameter( 'form_id' ),
+                            'url_cards_image' => plugins_url( 'frontend/resources/images/cards.png', Lib\Plugin::getMainFile() ),
+                            'show_price' => Lib\Proxy\Shared::showPaymentSpecificPrices( false ),
+                            'cart_info' => $cart_info,
+                            'payment_status' => $userData->extractPaymentStatus(),
+                        ),
+                        false
+                    ),
+                    'pay' => $cart_info->getPayNow(),
+                );
+            }
+        }
+        $gateways = Proxy\Shared::preparePaymentOptions(
+            $gateways,
+            self::parameter( 'form_id' ),
+            Lib\Proxy\Shared::showPaymentSpecificPrices( false ),
+            $cart_info,
+            $userData
+        );
+
+        return Proxy\Pro::filterGateways( $gateways, $userData );
     }
 
     /**

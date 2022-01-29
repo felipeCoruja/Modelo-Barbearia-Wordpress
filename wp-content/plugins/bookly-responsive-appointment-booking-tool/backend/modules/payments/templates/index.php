@@ -43,10 +43,10 @@ use Bookly\Backend\Components\Controls;
                 </div>
                 <div class="col-lg-2 col-md-4">
                     <div class="form-group">
-                        <select class="form-control <?php echo $customers === false ? 'bookly-js-select-ajax' : 'bookly-js-select' ?>" id="bookly-filter-customer" data-placeholder="<?php esc_attr_e( 'Customer', 'bookly' ) ?>" <?php echo $customers === false ? 'data-ajax--action' : 'data-action' ?>="bookly_get_customers_list">
+                        <select class="form-control <?php echo esc_attr( $customers === false ? 'bookly-js-select-ajax' : 'bookly-js-select' ) ?>" id="bookly-filter-customer" data-placeholder="<?php esc_attr_e( 'Customer', 'bookly' ) ?>" <?php echo esc_attr( $customers === false ? 'data-ajax--action' : 'data-action' ) ?>="bookly_get_customers_list">
                         <?php if ( $customers !== false ) : ?>
                             <?php foreach ( $customers as $customer_id => $customer ) : ?>
-                                <option value="<?php echo $customer_id ?>" data-search='<?php echo esc_attr( json_encode( array_values( $customer ) ) ) ?>'><?php echo esc_html( $customer['full_name'] ) ?></option>
+                                <option value="<?php echo esc_attr( $customer_id ) ?>" data-search='<?php echo esc_attr( json_encode( array_values( $customer ) ) ) ?>'><?php echo esc_html( $customer['full_name'] ) ?></option>
                             <?php endforeach ?>
                         <?php endif ?>
                         </select>
@@ -56,7 +56,7 @@ use Bookly\Backend\Components\Controls;
                     <div class="form-group">
                         <select id="bookly-filter-staff" class="form-control bookly-js-select" data-placeholder="<?php esc_attr_e( 'Provider', 'bookly' ) ?>">
                             <?php foreach ( $providers as $provider ) : ?>
-                                <option value="<?php echo $provider['id'] ?>"><?php echo esc_html( $provider['full_name'] ) ?></option>
+                                <option value="<?php echo esc_attr( $provider['id'] ) ?>"><?php echo esc_html( $provider['full_name'] ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
@@ -65,7 +65,7 @@ use Bookly\Backend\Components\Controls;
                     <div class="form-group">
                         <select id="bookly-filter-service" class="form-control bookly-js-select" data-placeholder="<?php esc_attr_e( 'Service', 'bookly' ) ?>">
                             <?php foreach ( $services as $service ) : ?>
-                                <option value="<?php echo $service['id'] ?>"><?php echo esc_html( $service['title'] ) ?></option>
+                                <option value="<?php echo esc_attr( $service['id'] ) ?>"><?php echo esc_html( $service['title'] ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
@@ -86,7 +86,7 @@ use Bookly\Backend\Components\Controls;
                 <tr>
                     <?php foreach ( $datatables['payments']['settings']['columns'] as $column => $show ) : ?>
                         <?php if ( $show ) : ?>
-                            <th><?php echo $datatables['payments']['titles'][ $column ] ?></th>
+                            <th><?php echo esc_html( $datatables['payments']['titles'][ $column ] ) ?></th>
                         <?php endif ?>
                     <?php endforeach ?>
                     <th></th>

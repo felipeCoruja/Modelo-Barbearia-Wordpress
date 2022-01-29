@@ -11,6 +11,7 @@ abstract class Price
     private static $currencies = array(
         'AED' => array( 'symbol' => 'AED',  'format' => '{price|2} {symbol}' ),
         'AMD' => array( 'symbol' => 'դր.',  'format' => '{price|2} {symbol}' ),
+        'ANG' => array( 'symbol' => 'ƒ',    'format' => '{symbol}{price|2}' ),
         'AOA' => array( 'symbol' => 'Kz',   'format' => '{symbol} {price|2}' ),
         'ARS' => array( 'symbol' => '$',    'format' => '{symbol}{price|2}' ),
         'AUD' => array( 'symbol' => 'A$',   'format' => '{symbol}{price|2}' ),

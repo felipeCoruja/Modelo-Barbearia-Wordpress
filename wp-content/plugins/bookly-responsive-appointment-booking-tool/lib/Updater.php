@@ -7,6 +7,160 @@ namespace Bookly\Lib;
  */
 class Updater extends Base\Updater
 {
+    function update_20_5()
+    {
+        global $wpdb;
+
+        $charset_collate = $wpdb->has_cap( 'collation' )
+            ? $wpdb->get_charset_collate()
+            : 'DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci';
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . $this->getTableName( 'bookly_mailing_lists' ) . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(255) DEFAULT NULL
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . $this->getTableName( 'bookly_mailing_list_recipients' ) . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `mailing_list_id` INT UNSIGNED NOT NULL,
+                `name` VARCHAR(255) DEFAULT NULL,
+                `phone` VARCHAR(255) DEFAULT NULL,
+                `created_at` DATETIME NOT NULL,
+            CONSTRAINT
+                FOREIGN KEY (mailing_list_id)
+                REFERENCES ' . $this->getTableName( 'bookly_mailing_lists' ) . ' (`id`)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . $this->getTableName( 'bookly_mailing_campaigns' ) . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `mailing_list_id` INT UNSIGNED NULL,
+                `name` VARCHAR(255) DEFAULT NULL,
+                `text` TEXT DEFAULT NULL,
+                `state`  ENUM("pending","completed") NOT NULL DEFAULT "pending",
+                `send_at` DATETIME NOT NULL,
+                `created_at` DATETIME NOT NULL,
+            CONSTRAINT
+                FOREIGN KEY (mailing_list_id)
+                REFERENCES ' . $this->getTableName( 'bookly_mailing_lists' ) . ' (`id`)
+                ON DELETE SET NULL 
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . $this->getTableName( 'bookly_mailing_queue' ) . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `phone` VARCHAR(255) NOT NULL,
+                `text` TEXT DEFAULT NULL,
+                `sent` TINYINT(1) DEFAULT 0,
+                `created_at` DATETIME NOT NULL
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $this->alterTables( array(
+            'bookly_services' => array(
+                'ALTER TABLE `%s` CHANGE `online_meetings` `online_meetings` ENUM("off","zoom","google_meet","jitsi") NOT NULL DEFAULT "off"',
+            ),
+            'bookly_appointments' => array(
+                'ALTER TABLE `%s` CHANGE `online_meeting_provider` `online_meeting_provider` ENUM("zoom","google_meet","jitsi") DEFAULT NULL',
+            ),
+        ) );
+
+        add_option( 'bookly_cloud_auto_recharge_end_at', '' );
+        add_option( 'bookly_cloud_auto_recharge_end_at_ts', '0' );
+        add_option( 'bookly_cloud_auto_recharge_gateway', '' );
+        add_option( 'bookly_cloud_renew_auto_recharge_notice_hide_until', '-1' );
+        add_option( 'bookly_cloud_badge_consider_sms', '1' );
+        add_option( 'bookly_cal_month_view_style', 'classic' );
+        add_option( 'bookly_gen_badge_consider_news', '1' );
+    }
+
+    function update_20_4()
+    {
+        $self = $this;
+
+        $disposable_options[] = $this->disposable( __FUNCTION__ . '-add-tokens-1', function () use ( $self ) {
+            $self->alterTables( array(
+                'bookly_staff' => array(
+                    'ALTER TABLE `%s` ADD COLUMN `gateways` VARCHAR(255) DEFAULT NULL',
+                    'ALTER TABLE `%s` ADD COLUMN `icalendar_days_after` INT NOT NULL DEFAULT 365 AFTER `zoom_oauth_token`',
+                    'ALTER TABLE `%s` ADD COLUMN `icalendar_days_before` INT NOT NULL DEFAULT 365 AFTER `zoom_oauth_token`',
+                    'ALTER TABLE `%s` ADD COLUMN `icalendar_token` VARCHAR(255) DEFAULT NULL AFTER `zoom_oauth_token`',
+                    'ALTER TABLE `%s` ADD COLUMN `icalendar` TINYINT(1) NOT NULL DEFAULT 0 AFTER `zoom_oauth_token`',
+                ),
+            ) );
+
+            add_option( 'bookly_app_show_terms', '0' );
+            add_option( 'bookly_app_show_download_ics', '0' );
+            add_option( 'bookly_co_email' );
+            add_option( 'bookly_co_industry' );
+            add_option( 'bookly_co_size' );
+
+            $self->addL10nOptions( array(
+                'bookly_l10n_button_download_ics' => __( 'Download ICS', 'bookly' ),
+                'bookly_l10n_label_terms' => __( 'I agree to the terms of service', 'bookly' ),
+                'bookly_l10n_error_terms' => __( 'You must accept our terms', 'bookly' ),
+            ) );
+        } );
+
+        $disposable_options[] = $this->disposable( __FUNCTION__ . '-add-tokens-2', function () use ( $self ) {
+            /** @global \wpdb $wpdb */
+            global $wpdb;
+
+            // Setup tokens for existing payments
+            $staff_table = $self->getTableName( 'bookly_staff' );
+
+            $wpdb->query( $wpdb->prepare( 'UPDATE `' . $staff_table . '` SET `icalendar_token` = MD5(CONCAT(%s,id)) WHERE icalendar_token IS NULL', md5( uniqid( time(), true ) ) ) );
+        } );
+
+        foreach ( $disposable_options as $option_name ) {
+            delete_option( $option_name );
+        }
+    }
+
+    function update_20_3()
+    {
+        global $wpdb;
+
+        $charset_collate = $wpdb->has_cap( 'collation' )
+            ? $wpdb->get_charset_collate()
+            : 'DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci';
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . $this->getTableName( 'bookly_orders' ) . '` (
+                `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `token`      VARCHAR(255) DEFAULT NULL
+              ) ENGINE = INNODB
+              ' . $charset_collate
+        );
+
+        $this->alterTables( array(
+            'bookly_services' => array(
+                'ALTER TABLE `%s` CHANGE `online_meetings` `online_meetings` ENUM("off","zoom","google_meet") NOT NULL DEFAULT "off"',
+            ),
+            'bookly_appointments' => array(
+                'ALTER TABLE `%s` CHANGE `online_meeting_provider` `online_meeting_provider` ENUM("zoom", "google_meet") DEFAULT NULL',
+            ),
+            'bookly_customer_appointments' => array(
+                'ALTER TABLE `%s` ADD COLUMN `order_id` INT UNSIGNED DEFAULT NULL AFTER `payment_id`',
+                'ALTER TABLE `%s` ADD CONSTRAINT FOREIGN KEY (`order_id`) REFERENCES `' . $this->getTableName( 'bookly_orders' ) . '` (`id`) ON DELETE SET NULL ON UPDATE CASCADE',
+            ),
+        ) );
+
+        add_option( 'bookly_app_show_single_slot', '0' );
+    }
+
     function update_20_2()
     {
         global $wpdb;

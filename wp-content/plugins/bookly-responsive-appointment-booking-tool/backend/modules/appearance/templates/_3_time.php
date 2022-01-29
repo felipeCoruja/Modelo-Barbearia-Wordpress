@@ -172,11 +172,11 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                         </span>
                     </div>
                     <?php for ( $i = 1; $i <= 7; ++ $i ) : ?>
-                        <div class="bookly-column col<?php echo $i ?>">
+                        <div class="bookly-column col<?php echo esc_attr( $i ) ?>">
                             <button class="bookly-day bookly-js-first-child"><?php echo date_i18n( 'D, M d', strtotime( '+' . ( $i - 1 ) . ' days', current_time( 'timestamp' ) ) ) ?></button>
                             <?php for ( $j = 28800; $j <= 61200; $j += 3600 ) : ?>
-                                <?php $slot_type =  mt_rand( 0, 2 ) ?>
-                                <button class="bookly-hour ladda-button<?php if ( $slot_type == 1 ) echo get_option( 'bookly_app_show_blocked_timeslots' ) == 1 ? ' booked' : ' no-booked';elseif ( $slot_type == 2 && Config::waitingListActive() ) echo ' no-waiting-list'?>">
+                                <?php $slot_type = mt_rand( 0, 2 ) ?>
+                                <button class="bookly-hour ladda-button<?php if ( $slot_type == 1 ) echo get_option( 'bookly_app_show_blocked_timeslots' ) == 1 ? ' booked' : ' no-booked'; elseif ( $slot_type == 2 && Config::waitingListActive() ) echo ' no-waiting-list' ?>">
                                     <span class="ladda-label bookly-time-main">
                                         <i class="bookly-hour-icon"><span></span></i><?php echo DateTime::formatTime( $j ) ?>
                                     </span>

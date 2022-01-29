@@ -5,12 +5,12 @@ use Bookly\Frontend\Modules\Booking\Proxy;
 use Bookly\Frontend\Components;
 
 /** @var \Bookly\Lib\UserBookingData $userData */
-echo $progress_tracker;
+echo Common::stripScripts( $progress_tracker );
 ?>
 
-<div class="bookly-box"><?php echo $info_text ?></div>
+<div class="bookly-box"><?php echo Common::html( $info_text ) ?></div>
 <?php if ( $info_text_guest ) : ?>
-    <div class="bookly-box bookly-js-guest"><?php echo $info_text_guest ?></div>
+    <div class="bookly-box bookly-js-guest"><?php echo Common::html( $info_text_guest ) ?></div>
 <?php endif ?>
 <?php if ( ! get_current_user_id() && ! $userData->getFacebookId() && ( Lib\Config::showLoginButton() || Lib\Proxy\Pro::showFacebookLoginButton() ) ) : ?>
 <div class="bookly-box bookly-guest bookly-js-guest">
@@ -85,6 +85,20 @@ echo $progress_tracker;
                     <textarea class="bookly-js-user-notes" rows="3"><?php echo esc_html( $userData->getNotes() ) ?></textarea>
                 </div>
             </div>
+        </div>
+    <?php endif ?>
+    <?php if ( get_option( 'bookly_app_show_terms', false ) ): ?>
+        <div class="bookly-box">
+            <div class="bookly-checkbox-group" style="line-height: 28px;">
+                <input type="checkbox" class="bookly-js-terms" id="bookly-terms-<?php echo $userData->getFormId() ?>">
+                <label class="bookly-square bookly-checkbox" style="width:28px; float:left; margin-left: 0; margin-right: 5px;" for="bookly-terms-<?php echo $userData->getFormId() ?>">
+                    <i class="bookly-icon-sm"></i>
+                </label>
+                <label for="bookly-terms-<?php echo $userData->getFormId() ?>">
+                    <?php echo Common::getTranslatedOption( 'bookly_l10n_label_terms' ) ?>
+                </label>
+            </div>
+            <div class="bookly-js-terms-error bookly-label-error"></div>
         </div>
     <?php endif ?>
 </div>

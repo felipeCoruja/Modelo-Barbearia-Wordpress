@@ -36,6 +36,9 @@ abstract class Plugin extends Base\Plugin
         Backend\Components\Dialogs\Appointment\Edit\Ajax::init();
         Backend\Components\Dialogs\Customer\Delete\Ajax::init();
         Backend\Components\Dialogs\Customer\Edit\Ajax::init();
+        Backend\Components\Dialogs\Mailing\AddRecipients\Ajax::init();
+        Backend\Components\Dialogs\Mailing\Campaign\Ajax::init();
+        Backend\Components\Dialogs\Mailing\CreateList\Ajax::init();
         Backend\Components\Dialogs\Payment\Ajax::init();
         Backend\Components\Dialogs\Service\Edit\Ajax::init();
         Backend\Components\Dialogs\Service\Order\Ajax::init();
@@ -45,20 +48,21 @@ abstract class Plugin extends Base\Plugin
         Backend\Components\Dialogs\TableSettings\Ajax::init();
         Backend\Components\Editable\Proxy\Shared::init();
         Backend\Components\Gutenberg\BooklyForm\Block::init();
-        Backend\Components\Notices\CollectStatsAjax::init();
-        Backend\Components\Notices\LiteRebrandingAjax::init();
-        Backend\Components\Notices\NpsAjax::init();
-        Backend\Components\Notices\PoweredByAjax::init();
+        Backend\Components\Notices\Lite\Ajax::init();
+        Backend\Components\Notices\Nps\Ajax::init();
+        Backend\Components\Notices\PoweredBy\Ajax::init();
+        Backend\Components\Notices\Promotion\Ajax::init();
         Backend\Components\Notices\Rate\Ajax::init();
-        Backend\Components\Notices\SmsPromotionAjax::init();
-        Backend\Components\Notices\SubscribeAjax::init();
+        Backend\Components\Notices\RenewAutoRecharge\Ajax::init();
+        Backend\Components\Notices\Statistic\Ajax::init();
+        Backend\Components\Notices\Subscribe\Ajax::init();
         Backend\Components\Support\ButtonsAjax::init();
         Backend\Components\TinyMce\Tools::init();
         Backend\Modules\Appearance\Ajax::init();
         Backend\Modules\Appointments\Ajax::init();
         Backend\Modules\Calendar\Ajax::init();
-        Backend\Modules\CloudProducts\Ajax::init();
         Backend\Modules\CloudBilling\Ajax::init();
+        Backend\Modules\CloudProducts\Ajax::init();
         Backend\Modules\CloudSettings\Ajax::init();
         Backend\Modules\CloudSms\Ajax::init();
         Backend\Modules\CloudZapier\Ajax::init();
@@ -69,12 +73,17 @@ abstract class Plugin extends Base\Plugin
         Backend\Modules\Payments\Ajax::init();
         Backend\Modules\Services\Ajax::init();
         Backend\Modules\Settings\Ajax::init();
+        Backend\Modules\Setup\Ajax::init();
         Backend\Modules\Shop\Ajax::init();
         Backend\Modules\Staff\Ajax::init();
         Frontend\Modules\Booking\Ajax::init();
         Frontend\Modules\Booking\Proxy\Invoices::init();
         Frontend\Modules\Stripe\Ajax::init();
         Frontend\Modules\Zapier\Ajax::init();
+
+        add_action( 'elementor/widgets/widgets_registered', function ( $widgets_manager ) {
+            Backend\Components\Elementor\Widgets\BooklyForm\Widget::register( $widgets_manager );
+        } );
 
         if ( ! is_admin() ) {
             // Init short code.

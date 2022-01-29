@@ -51,7 +51,7 @@ jQuery(function ($) {
                 case 'category_name':
                     columns.push({
                         data: column, render: function (data, type, row, meta) {
-                            return data !== null ? data : BooklyL10n.uncategorized;
+                            return data !== null ? $.fn.dataTable.render.text().display(data) : BooklyL10n.uncategorized;
                         }
                     });
                     break;

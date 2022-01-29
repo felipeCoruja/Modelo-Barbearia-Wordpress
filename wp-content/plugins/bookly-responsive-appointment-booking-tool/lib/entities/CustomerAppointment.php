@@ -28,6 +28,8 @@ class CustomerAppointment extends Lib\Base\Entity
     /** @var  int */
     protected $payment_id;
     /** @var  int */
+    protected $order_id;
+    /** @var  int */
     protected $number_of_persons = 1;
     /** @var  int */
     protected $units = 1;
@@ -81,6 +83,7 @@ class CustomerAppointment extends Lib\Base\Entity
         'customer_id'              => array( 'format' => '%d', 'reference' => array( 'entity' => 'Customer' ) ),
         'appointment_id'           => array( 'format' => '%d', 'reference' => array( 'entity' => 'Appointment' ) ),
         'payment_id'               => array( 'format' => '%d', 'reference' => array( 'entity' => 'Payment' ) ),
+        'order_id'                 => array( 'format' => '%d', 'reference' => array( 'entity' => 'Order' ) ),
         'number_of_persons'        => array( 'format' => '%d' ),
         'units'                    => array( 'format' => '%d' ),
         'notes'                    => array( 'format' => '%s' ),
@@ -145,6 +148,7 @@ class CustomerAppointment extends Lib\Base\Entity
                 Lib\Proxy\OutlookCalendar::syncEvent( $appointment );
                 // Waiting list.
                 Lib\Proxy\WaitingList::handleParticipantsChange( false, $appointment );
+                Lib\Proxy\WaitingList::handleFreePlace( false, $this );
             }
             if ( $compound_collaborative ) {
                 /** @var CustomerAppointment[] $ca_list */
@@ -174,6 +178,32 @@ class CustomerAppointment extends Lib\Base\Entity
     public function getStatusTitle()
     {
         return self::statusToString( $this->getStatus() );
+    }
+
+    /**
+     * Check if cancel allowed
+     *
+     * @return bool
+     */
+    public function cancelAllowed()
+    {
+        $allow_cancel = true;
+        $appointment = new Lib\Entities\Appointment();
+        $minimum_time_prior_cancel = (int) Lib\Proxy\Pro::getMinimumTimePriorCancel( $appointment->getServiceId() );
+        if ( $minimum_time_prior_cancel > 0
+             && $appointment->load( $this->getAppointmentId() )
+             && $appointment->getStartDate() !== null
+        ) {
+            $allow_cancel_time = strtotime( $appointment->getStartDate() ) - $minimum_time_prior_cancel;
+            if ( current_time( 'timestamp' ) > $allow_cancel_time ) {
+                $allow_cancel = false;
+            }
+        }
+        if ( $this->getStatus() == Lib\Entities\CustomerAppointment::STATUS_DONE ) {
+            $allow_cancel = false;
+        }
+
+        return $allow_cancel;
     }
 
     /**
@@ -211,6 +241,8 @@ class CustomerAppointment extends Lib\Base\Entity
                             Lib\Proxy\OutlookCalendar::syncEvent( $appointment );
                             // Waiting list.
                             Lib\Proxy\WaitingList::handleParticipantsChange( false, $appointment );
+
+                            Lib\Proxy\WaitingList::handleFreePlace( false, $i->getCA() );
                         }
                     }
                 }
@@ -454,6 +486,29 @@ class CustomerAppointment extends Lib\Base\Entity
     public function setPaymentId( $payment_id )
     {
         $this->payment_id = $payment_id;
+
+        return $this;
+    }
+
+    /**
+     * Gets order_id
+     *
+     * @return int
+     */
+    public function getOrderId()
+    {
+        return $this->order_id;
+    }
+
+    /**
+     * Sets order_id
+     *
+     * @param int $order_id
+     * @return $this
+     */
+    public function setOrderId( $order_id )
+    {
+        $this->order_id = $order_id;
 
         return $this;
     }

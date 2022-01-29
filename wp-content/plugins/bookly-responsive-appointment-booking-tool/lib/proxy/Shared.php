@@ -5,6 +5,7 @@ use Bookly\Lib;
 
 /**
  * Class Shared
+ *
  * @package Bookly\Lib\Proxy
  *
  * @method static Lib\CartInfo applyGateway( Lib\CartInfo $cart_info, string $gateway ) Set gateway.
@@ -14,14 +15,15 @@ use Bookly\Lib;
  * @method static string buildOnlineMeetingJoinUrl( string $default, Lib\Entities\Appointment $appointment ) Build online meeting join url for given appointment.
  * @method static void   deleteCustomerAppointment( Lib\Entities\CustomerAppointment $ca ) Deleting customer appointment
  * @method static void   doDailyRoutine() Execute daily routines.
- * @method static array  prepareOutdatedUnpaidPayments( array $payments ) Get list of outdated unpaid payments in format [ 'id' => 'details' ].
- * @method static array  handleRequestAction( string $bookly_action ) Handle requests with given action.
+ * @method static array  prepareOutdatedUnpaidPayments( array $payments ) Get list of outdated unpaid payments in format ['id' => 'details'].
+ * @method static array  handleRequestAction( string $action ) Handle requests with given action.
  * @method static array  prepareAppointmentCodes( array $codes, Lib\Entities\Appointment $appointment ) Prepare codes for given appointment.
  * @method static array  prepareCaSeSt( array $result ) Prepare Categories Services Staff data
  * @method static Lib\Query prepareCaSeStQuery( Lib\Query $query ) Prepare CaSeSt query
  * @method static array  prepareCategoryServiceStaffLocation( array $location_data, array $row ) Prepare Category Service Staff Location data by row
  * @method static array  prepareCategoryService( array $result, array $row ) Prepare Category Service data by row
  * @method static array  prepareCustomerAppointmentCodes( array $codes, Lib\Entities\CustomerAppointment $customer_appointment, string $format ) Prepare codes for given customer appointment.
+ * @method static string prepareIcsEventTemplate( string $template, Lib\Utils\Ics\Event $event ) Prepare template for ICS.
  * @method static array  prepareNotificationTitles( array $titles ) Prepare notification titles.
  * @method static array  prepareNotificationTypes( array $types, string $gateway ) Prepare notification type IDs.
  * @method static array  preparePaymentDetails( array $details, Lib\DataHolders\Booking\Order $order, Lib\CartInfo $cart_info ) Add info about payment

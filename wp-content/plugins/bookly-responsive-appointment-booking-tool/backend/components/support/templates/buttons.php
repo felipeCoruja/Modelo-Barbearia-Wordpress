@@ -20,7 +20,7 @@ use Bookly\Lib\Utils;
     <div class="col-auto">
         <a class="btn btn-default" title="<?php esc_attr_e( 'View this page at Bookly Pro Demo', 'bookly' ) ?>"
             <?php if ( $dismiss ) : ?>
-                href="<?php echo $target ?>"
+                href="<?php echo esc_attr( $target ) ?>"
             <?php else : ?>
                 href="#bookly-demo-site-info-modal"  data-toggle="bookly-modal"
             <?php endif ?>

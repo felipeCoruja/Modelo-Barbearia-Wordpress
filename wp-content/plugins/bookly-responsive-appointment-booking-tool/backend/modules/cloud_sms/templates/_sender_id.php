@@ -32,7 +32,7 @@ use Bookly\Backend\Components\Controls\Buttons;
     <tr>
         <?php foreach ( $datatables['sms_sender']['settings']['columns'] as $column => $show ) : ?>
             <?php if ( $show ) : ?>
-                <th><?php echo $datatables['sms_sender']['titles'][ $column ] ?></th>
+                <th><?php echo esc_attr( $datatables['sms_sender']['titles'][ $column ] ) ?></th>
             <?php endif ?>
         <?php endforeach ?>
     </tr>

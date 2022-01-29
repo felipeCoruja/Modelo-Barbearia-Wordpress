@@ -107,7 +107,7 @@ class Advanced_Data_Table extends Widget_Base
 		    $this->add_control(
 			    'eael_adv_data_table_pro_enable_warning',
 			    [
-				    'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.net/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
+				    'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.com/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
 				    'type' => Controls_Manager::RAW_HTML,
 				    'condition' => [
 					    'ea_adv_data_table_source' => ['database','remote','google','tablepress'],
@@ -429,15 +429,15 @@ class Advanced_Data_Table extends Widget_Base
                 'options' => [
                     'left' => [
                         'title' => esc_html__('Left', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-left',
+                        'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => esc_html__('Center', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-center',
+                        'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
                         'title' => esc_html__('Right', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-right',
+                        'icon' => 'eicon-text-align-right',
                     ],
                 ],
                 'default' => 'left',
@@ -548,15 +548,15 @@ class Advanced_Data_Table extends Widget_Base
                 'options' => [
                     'left' => [
                         'title' => esc_html__('Left', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-left',
+                        'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => esc_html__('Center', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-center',
+                        'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
                         'title' => esc_html__('Right', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-right',
+                        'icon' => 'eicon-text-align-right',
                     ],
                 ],
                 'default' => 'left',
@@ -974,15 +974,15 @@ class Advanced_Data_Table extends Widget_Base
                 'options' => [
                     'left' => [
                         'title' => esc_html__('Left', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-left',
+                        'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => esc_html__('Center', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-center',
+                        'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
                         'title' => esc_html__('Right', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-right',
+                        'icon' => 'eicon-text-align-right',
                     ],
                 ],
                 'default' => 'right',
@@ -1121,15 +1121,15 @@ class Advanced_Data_Table extends Widget_Base
                 'options' => [
                     'left' => [
                         'title' => esc_html__('Left', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-left',
+                        'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => esc_html__('Center', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-center',
+                        'icon' => 'eicon-text-align-center',
                     ],
                     'right' => [
                         'title' => esc_html__('Right', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-right',
+                        'icon' => 'eicon-text-align-right',
                     ],
                 ],
                 'default' => 'left',

@@ -11,6 +11,7 @@ class Range
     const PARTIALLY_BOOKED     = 2;
     const FULLY_BOOKED         = 3;
     const WAITING_LIST_STARTED = 4;
+    const INTERMEDIATE         = 5;  // internal state for multi-day + consecutive/parallel bookings
 
     /** @var IPoint */
     protected $start;
@@ -533,6 +534,26 @@ class Range
     public function noWaitingListStarted()
     {
         return $this->data->state() != self::WAITING_LIST_STARTED;
+    }
+
+    /**
+     * Tells whether range's state is intermediate.
+     *
+     * @return bool
+     */
+    public function intermediate()
+    {
+        return $this->data->state() == self::INTERMEDIATE;
+    }
+
+    /**
+     * Tells whether range's state is not intermediate.
+     *
+     * @return bool
+     */
+    public function notIntermediate()
+    {
+        return $this->data->state() != self::INTERMEDIATE;
     }
 
     /**

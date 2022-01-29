@@ -7,7 +7,7 @@ import stepService from "./service_step";
  */
 export default function stepComplete(params) {
     var data = $.extend({
-            action    : 'bookly_render_complete',
+            action: 'bookly_render_complete',
             csrf_token: BooklyL10n.csrf_token,
         }, params),
         $container = opt[params.form_id].$container;
@@ -23,7 +23,12 @@ export default function stepComplete(params) {
                     $('.bookly-js-start-over', $container).on('click', function (e) {
                         e.preventDefault();
                         laddaStart(this);
-                        stepService({form_id: params.form_id, reset_form:true, new_chain: true});
+                        stepService({form_id: params.form_id, reset_form: true, new_chain: true});
+                    });
+                    $('.bookly-js-download-ics', $container).on('click', function (e) {
+                        let ladda = laddaStart(this);
+                        window.location = BooklyL10n.ajaxurl + (BooklyL10n.ajaxurl.indexOf('?') > 0 ? '&' : '?') + 'action=bookly_download_ics&form_id=' + params.form_id + '&csrf_token=' + BooklyL10n.csrf_token;
+                        setTimeout(() => ladda.stop(), 1500);
                     });
                     $('.bookly-js-download-invoice', $container).on('click', function (e) {
                         let ladda = laddaStart(this);

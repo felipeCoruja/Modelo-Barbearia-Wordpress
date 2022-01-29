@@ -77,8 +77,9 @@ class Ajax extends Lib\Base\Ajax
                     case 'user':
                         $fields[] = 'wpu.display_name';
                         break;
-                    case 'full_name':
                     case 'email':
+                    case 'full_name':
+                    case 'id':
                     case 'phone':
                         $fields[] = 's.' . $column['data'];
                         break;
@@ -92,7 +93,7 @@ class Ajax extends Lib\Base\Ajax
                 $search_columns[] = $field . ' LIKE "%%%s%"';
             }
             if ( ! empty( $search_columns ) ) {
-                $query->whereRaw( implode( ' OR ', $search_columns ), array_fill( 0, count( $search_columns ), $filter['search'] ) );
+                $query->whereRaw( implode( ' OR ', $search_columns ), array_fill( 0, count( $search_columns ), $wpdb->esc_like( $filter['search'] ) ) );
             }
         }
 

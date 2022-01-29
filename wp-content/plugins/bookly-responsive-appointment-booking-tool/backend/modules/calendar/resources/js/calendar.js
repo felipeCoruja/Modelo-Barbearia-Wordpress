@@ -159,7 +159,7 @@ jQuery(function ($) {
             calendar.ec.refetchEvents();
         }
     });
-    if (locationIds === null) {
+    if (locationIds === null || locationIds === 'all') {
         $locationsFilter.booklyDropdown('selectAll');
     } else if (locationIds !== '') {
         $locationsFilter.booklyDropdown('setSelected', locationIds.split(','));
@@ -176,9 +176,9 @@ jQuery(function ($) {
         let $refresh = $('input[name="bookly_calendar_refresh_rate"]:checked');
         clearTimeout(calendarTimer);
         if ($refresh.val() > 0) {
-            calendarTimer = setTimeout(function () {
+            calendarTimer = setInterval(function () {
                 calendar.ec.refetchEvents();
-            }, $refresh.val() * 1000)
+            }, $refresh.val() * 1000);
         }
     }
 
@@ -227,7 +227,6 @@ jQuery(function ($) {
         calendar: {
             // General Display.
             headerToolbar: headerToolbar,
-            height: heightEC(),
             // Views.
             view: lastView,
             views: {
@@ -265,18 +264,37 @@ jQuery(function ($) {
         refresh: refreshBooklyCalendar,
         viewChanged: function (view) {
             setCookie('bookly_cal_view', view.type);
+            calendar.ec.setOption('height', heightEC(view.type));
         },
         l10n: BooklyL10n
     });
 
-    function heightEC() {
-        let height = $(window).height() - $calendar.offset().top - 20;
+    function heightEC(view_type) {
+        let calendar_tools_height = 81,
+            calendar_top = $calendar.offset().top + calendar_tools_height,
+            calendar_height = $(window).height() - calendar_top,
+            day_head_height = 31,
+            weeks_rows = 5,
+            day_height = calendar_height / weeks_rows,
+            slot_height = 20.4,
+            day_slots_count = Math.floor((day_height - day_head_height) / slot_height);
+        if (day_slots_count < 3) {
+            day_slots_count = 3;
+        }
+        let height = ((day_slots_count * slot_height + day_head_height) * weeks_rows);
+        if (view_type != 'dayGridMonth') {
+            if ($('.ec-content', $calendar).height() > height) {
+                height = Math.max(height, 300);
+            } else {
+                height = 'auto';
+            }
+        }
 
-        return (height > 620 ? height : 620) + 'px';
+        return height === 'auto' ? 'auto' : (calendar_tools_height + height) + 'px';
     }
 
     $(window).on('resize', function () {
-        calendar.ec.setOption('height', heightEC());
+        calendar.ec.setOption('height', heightEC(calendar.ec.getOption('view')));
     });
 
     /**

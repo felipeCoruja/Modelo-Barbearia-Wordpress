@@ -3,8 +3,10 @@ use Bookly\Backend\Components\Controls\Buttons;
 
 /**
  * @var array $recharges
+ * @var string $label
  */
 ?>
+<label class="bookly-js-auto-recharge-label"><?php echo esc_html( $label ) ?></label>
 <div class="form-row flex-nowrap bookly-js-auto-recharge-selector">
     <div class="col">
         <div class="dropdown">
@@ -28,10 +30,10 @@ use Bookly\Backend\Components\Controls\Buttons;
                         <?php if ( in_array( 'users_choice', $recharge['tags'] ) ) : ?>
                             <span class="bookly-js-users-choice badge badge-danger"><small><strong><?php esc_html_e( 'users choice', 'bookly' ) ?></strong></small></span>
                         <?php endif ?>
-                        $<?php echo $recharge['amount'] ?>
-                            <?php if ( $recharge['bonus'] ) : ?>
-                                <span class="text-success">+ <?php echo $recharge['bonus'] ?></span>
-                            <?php endif ?>
+                        $<?php echo esc_html( $recharge['amount'] ) ?>
+                        <?php if ( $recharge['bonus'] ) : ?>
+                            <span class="text-success">+ <?php echo esc_html( $recharge['bonus'] ) ?></span>
+                        <?php endif ?>
                     </button>
                 <?php endforeach ?>
             </div>

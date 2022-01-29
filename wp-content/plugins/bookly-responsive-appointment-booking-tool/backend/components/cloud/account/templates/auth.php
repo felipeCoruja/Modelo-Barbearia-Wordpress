@@ -1,5 +1,6 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use Bookly\Backend\Components\Controls;
+use Bookly\Lib\Utils\Common;
 /** @var array $promo_texts */
 ?>
 <div class="btn-group">
@@ -25,7 +26,7 @@ use Bookly\Backend\Components\Controls;
             <div class="modal-body">
                 <div id="bookly-form-register" class="bookly-js-modal-form">
                     <?php if ( $promo_texts['form'] ): ?>
-                        <div class="form-group"><?php echo $promo_texts['form'] ?></div>
+                        <div class="form-group"><?php echo Common::stripScripts( $promo_texts['form'] ) ?></div>
                     <?php endif ?>
                     <div class="form-group">
                         <label for="bookly-r-username"><?php esc_html_e( 'Email', 'bookly' ) ?></label>
@@ -94,7 +95,7 @@ use Bookly\Backend\Components\Controls;
                     <?php Controls\Buttons::renderSubmit( null, null, __( 'Register', 'bookly' ), array( 'name' => 'form-register' ) ) ?>
                     <?php if ( $promo_texts['button'] ) : ?>
                         <div class="border border-left-0 rounded px-2 d-flex align-items-center">
-                            <h6 class="m-0"><?php echo $promo_texts['button'] ?></h6>
+                            <h6 class="m-0"><?php echo Common::stripScripts( $promo_texts['button'] ) ?></h6>
                         </div>
                     <?php endif ?>
                 </div>

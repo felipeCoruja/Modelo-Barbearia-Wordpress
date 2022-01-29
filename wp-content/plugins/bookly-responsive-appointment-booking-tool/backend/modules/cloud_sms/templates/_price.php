@@ -11,7 +11,7 @@ use Bookly\Backend\Components\Dialogs;
         <tr>
             <?php foreach ( $datatables['sms_prices']['settings']['columns'] as $column => $show ) : ?>
                 <?php if ( $show ) : ?>
-                    <th><?php echo $datatables['sms_prices']['titles'][ $column ] ?></th>
+                    <th><?php echo esc_html( $datatables['sms_prices']['titles'][ $column ] ) ?></th>
                 <?php endif ?>
             <?php endforeach ?>
         </tr>

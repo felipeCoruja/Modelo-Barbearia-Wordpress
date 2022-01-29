@@ -79,6 +79,57 @@ abstract class Common
     }
 
     /**
+     * @param bool $allow
+     */
+    public static function cancelAppointmentRedirect( $allow )
+    {
+        if ( $url = $allow ? get_option( 'bookly_url_cancel_page_url' ) : get_option( 'bookly_url_cancel_denied_page_url' ) ) {
+            wp_redirect( $url );
+            self::redirect( $url );
+            exit;
+        }
+
+        $url = home_url();
+        if ( isset ( $_SERVER['HTTP_REFERER'] ) ) {
+            if ( parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_HOST ) == parse_url( $url, PHP_URL_HOST ) ) {
+                // Redirect back if user came from our site.
+                $url = $_SERVER['HTTP_REFERER'];
+            }
+        }
+        wp_redirect( $url );
+        self::redirect( $url );
+        exit;
+    }
+
+    /**
+     * Render redirection page
+     *
+     * @param string $url
+     */
+    public static function redirect( $url )
+    {
+        printf( '<!doctype html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="refresh" content="1;url=%s">
+                    <script type="text/javascript">
+                        window.location.href = %s;
+                    </script>
+                    <title>%s</title>
+                </head>
+                <body>
+                %s
+                </body>
+                </html>',
+            esc_attr( $url ),
+            json_encode( $url ),
+            __( 'Page Redirection', 'bookly' ),
+            sprintf( __( 'If you are not redirected automatically, follow the <a href="%s">link</a>.', 'bookly' ), esc_attr( $url ) )
+        );
+    }
+
+    /**
      * Escape params for admin.php?page
      *
      * @param $page_slug
@@ -430,5 +481,252 @@ abstract class Common
         }
 
         return new \WP_Filesystem_Direct( null );
+    }
+
+    /**
+     * Get sorted payment systems
+     *
+     * @return array
+     */
+    public static function getGateways()
+    {
+        $gateways = array();
+        if ( Lib\Config::payLocallyEnabled()) {
+            $gateways['local'] = array(
+                'title' => __( 'Local', 'bookly' ),
+            );
+        }
+
+        if ( Lib\Cloud\API::getInstance()->account->productActive( 'stripe' ) ) {
+            $gateways['cloud_stripe'] = array(
+                'title' => 'Stripe Cloud',
+            );
+        }
+        $gateways = array_map( function ( $gateway ) {
+            return $gateway['title'];
+        }, \Bookly\Backend\Modules\Appearance\Proxy\Shared::paymentGateways( $gateways ) );
+
+        $order = explode( ',', get_option( 'bookly_pmt_order' ) );
+        $payment_systems = array();
+
+        if ( $order ) {
+            foreach ( $order as $payment_system ) {
+                if ( array_key_exists( $payment_system, $gateways ) ) {
+                    $payment_systems[ $payment_system ] = $gateways[ $payment_system ];
+                    unset( $gateways[ $payment_system ] );
+                }
+            }
+        }
+
+        return array_merge( $payment_systems, $gateways );
+    }
+
+    /**
+     * Get common settings for Bookly calendar
+     *
+     * @return array
+     */
+    public static function getCalendarSettings()
+    {
+        $slot_length_minutes = get_option( 'bookly_gen_time_slot_length', '15' );
+        $slot = new \DateInterval( 'PT' . $slot_length_minutes . 'M' );
+
+        $hidden_days = array();
+        $min_time = '00:00:00';
+        $max_time = '24:00:00';
+        $scroll_time = '08:00:00';
+        // Find min and max business hours
+        $min = $max = null;
+        foreach ( Lib\Config::getBusinessHours() as $day => $bh ) {
+            if ( $bh['start'] === null ) {
+                if ( Lib\Config::showOnlyBusinessDaysInCalendar() ) {
+                    $hidden_days[] = $day;
+                }
+                continue;
+            }
+            if ( $min === null || $bh['start'] < $min ) {
+                $min = $bh['start'];
+            }
+            if ( $max === null || $bh['end'] > $max ) {
+                $max = $bh['end'];
+            }
+        }
+        if ( $min !== null ) {
+            $scroll_time = $min;
+            if ( Lib\Config::showOnlyBusinessHoursInCalendar() ) {
+                $min_time = $min;
+                $max_time = $max;
+            } else if ( $max > '24:00:00' ) {
+                $min_time = DateTime::buildTimeString( DateTime::timeToSeconds( $max ) - DAY_IN_SECONDS );
+                $max_time = $max;
+            }
+        }
+
+        return array(
+            'hiddenDays' => $hidden_days,
+            'slotDuration' => $slot->format( '%H:%I:%S' ),
+            'slotMinTime' => $min_time,
+            'slotMaxTime' => $max_time,
+            'scrollTime' => $scroll_time,
+            'locale' => Lib\Config::getShortLocale(),
+            'monthDayMaxEvents' => (int) ( get_option( 'bookly_cal_month_view_style' ) == 'minimalistic' ),
+            'mjsTimeFormat' => DateTime::convertFormat( 'time', DateTime::FORMAT_MOMENT_JS ),
+            'datePicker' => DateTime::datePickerOptions(),
+            'dateRange' => DateTime::dateRangeOptions(),
+            'today' => __( 'Today', 'bookly' ),
+            'week' => __( 'Week', 'bookly' ),
+            'day' => __( 'Day', 'bookly' ),
+            'month' => __( 'Month', 'bookly' ),
+            'list' => __( 'List', 'bookly' ),
+            'noEvents' => __( 'No appointments for selected period.', 'bookly' ),
+            'more' => __( '+%d more', 'bookly' ),
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public static function getIndustries()
+    {
+        return array(
+            __( 'Education', 'bookly' ) => array(
+                '34' => __( 'Universities', 'bookly' ),
+                '35' => __( 'Colleges', 'bookly' ),
+                '36' => __( 'Schools', 'bookly' ),
+                '37' => __( 'Libraries', 'bookly' ),
+                '38' => __( 'Teaching', 'bookly' ),
+                '39' => __( 'Tutoring lessons', 'bookly' ),
+                '40' => __( 'Parent meetings', 'bookly' ),
+                '41' => __( 'Services', 'bookly' ),
+                '42' => __( 'Child care', 'bookly' ),
+                '43' => __( 'Driving Schools', 'bookly' ),
+                '44' => __( 'Driving Instructors', 'bookly' ),
+                '45' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Beauty and wellness', 'bookly' ) => array(
+                '11' => __( 'Beauty salons', 'bookly' ),
+                '12' => __( 'Hair salons', 'bookly' ),
+                '13' => __( 'Nail salons', 'bookly' ),
+                '14' => __( 'Eyelash extensions', 'bookly' ),
+                '15' => __( 'Spa', 'bookly' ),
+                '16' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Events and entertainment', 'bookly' ) => array(
+                '46' => __( 'Events (One time and Recurring)', 'bookly' ),
+                '47' => __( 'Business events', 'bookly' ),
+                '48' => __( 'Meeting rooms', 'bookly' ),
+                '49' => __( 'Escape rooms', 'bookly' ),
+                '50' => __( 'Art classes', 'bookly' ),
+                '51' => __( 'Equipment rental', 'bookly' ),
+                '52' => __( 'Photographers', 'bookly' ),
+                '53' => __( 'Restaurants', 'bookly' ),
+                '54' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Medical', 'bookly' ) => array(
+                '17' => __( 'Medical Clinics & Doctors', 'bookly' ),
+                '18' => __( 'Dentists', 'bookly' ),
+                '19' => __( 'Chiropractors', 'bookly' ),
+                '20' => __( 'Acupuncture', 'bookly' ),
+                '21' => __( 'Massage', 'bookly' ),
+                '22' => __( 'Physiologists', 'bookly' ),
+                '23' => __( 'Psychologists', 'bookly' ),
+                '24' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Officials', 'bookly' ) => array(
+                '55' => __( 'City councils', 'bookly' ),
+                '56' => __( 'Embassies and consulates', 'bookly' ),
+                '57' => __( 'Attorneys', 'bookly' ),
+                '58' => __( 'Legal services', 'bookly' ),
+                '59' => __( 'Financial services', 'bookly' ),
+                '60' => __( 'Interview scheduling', 'bookly' ),
+                '61' => __( 'Call centers', 'bookly' ),
+                '62' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Personal meetings and services', 'bookly' ) => array(
+                '25' => __( 'Consulting', 'bookly' ),
+                '26' => __( 'Counselling', 'bookly' ),
+                '27' => __( 'Coaching', 'bookly' ),
+                '28' => __( 'Spiritual services', 'bookly' ),
+                '29' => __( 'Design consultants', 'bookly' ),
+                '30' => __( 'Cleaning', 'bookly' ),
+                '31' => __( 'Household', 'bookly' ),
+                '32' => __( 'Pet services', 'bookly' ),
+                '33' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Retailers', 'bookly' ) => array(
+                '1' => __( 'Supermarket', 'bookly' ),
+                '2' => __( 'Retail Finance', 'bookly' ),
+                '3' => __( 'Other retailers', 'bookly' ),
+            ),
+            __( 'Sport', 'bookly' ) => array(
+                '4' => __( 'Personal trainers', 'bookly' ),
+                '5' => __( 'Gyms', 'bookly' ),
+                '6' => __( 'Fitness classes', 'bookly' ),
+                '7' => __( 'Yoga classes', 'bookly' ),
+                '8' => __( 'Golf classes', 'bookly' ),
+                '9' => __( 'Sport items renting', 'bookly' ),
+                '10' => __( 'Other', 'bookly' ),
+            ),
+            __( 'Other', 'bookly' ) => array(
+                '63' => __( 'Other', 'bookly' ),
+            ),
+        );
+    }
+
+    /**
+     * Remove <script> tags from the given string
+     *
+     * @param string $html
+     * @return string
+     */
+    public static function stripScripts( $html )
+    {
+        return preg_replace( '@<script[^>]*?>.*?</script>@si', '', $html );
+    }
+
+    /**
+     * Prepare html for output (currently allow all tags)
+     *
+     * @param string $html
+     * @return string
+     */
+    public static function html( $html )
+    {
+        // Currently, allow any HTML tags
+        return $html;
+    }
+
+    /**
+     * Prepare css for output
+     *
+     * @param string $css
+     * @return string
+     */
+    public static function css( $css )
+    {
+        return trim( preg_replace( '#<style[^>]*>(.*)</style>#is', '$1', $css ) );
+    }
+
+    /**
+     * Update user meta only for blog users.
+     *
+     * @param string $meta_key
+     * @param string $meta_value
+     */
+    public static function updateBlogUsersMeta( $meta_key, $meta_value, $blog_id = null )
+    {
+        global $wpdb;
+        if ( is_multisite() ) {
+            $prefix = $wpdb->get_blog_prefix( $blog_id );
+            $query = 'UPDATE `' . $wpdb->usermeta . '` AS um
+                   LEFT JOIN `' . $wpdb->usermeta . '` AS um2
+                          ON (um2.user_id = um.user_id)
+                         SET um.meta_value = %s 
+                       WHERE um2.meta_key = %s
+                         AND um.meta_key = %s';
+            $wpdb->query( $wpdb->prepare( $query, $meta_value, $prefix . 'capabilities', $meta_key ) );
+        } else {
+            $wpdb->update( $wpdb->usermeta, compact( 'meta_value' ), compact( 'meta_key' ) );
+        }
     }
 }

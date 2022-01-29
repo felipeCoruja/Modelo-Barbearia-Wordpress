@@ -143,7 +143,7 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                             caption: '{' + name + '.' + code + '}',
                                             value: '{' + name + '.' + code + '}',
                                             score: 500,
-                                            docHTML: loop_codes[code]['description']
+                                            docHTML: escapeHtml(loop_codes[code]['description'])
                                         });
                                     } else if (top) {
                                         // Add top level loops to completions
@@ -152,14 +152,14 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                             value: '{#each ' + name + '.' + code + ' as ' + loop_codes[code]['loop']['item'] + '}{/each}',
                                             snippet: '{#each ' + name + '.' + code + ' as ' + loop_codes[code]['loop']['item'] + '}$0{/each}',
                                             score: 400,
-                                            docHTML: loop_codes[code]['description'][0]
+                                            docHTML: escapeHtml(loop_codes[code]['description'][0])
                                         });
                                         completions.push({
                                             caption: '{#each ' + name + '.' + code + ' as ' + loop_codes[code]['loop']['item'] + ' delimited by ", "}{/each}',
                                             value: '{#each ' + name + '.' + code + ' as ' + loop_codes[code]['loop']['item'] + ' delimited by ", "}{/each}',
                                             snippet: '{#each ' + name + '.' + code + ' as ' + loop_codes[code]['loop']['item'] + ' delimited by ", "}$0{/each}',
                                             score: 300,
-                                            docHTML: loop_codes[code]['description'][1]
+                                            docHTML: escapeHtml(loop_codes[code]['description'][1])
                                         });
                                     }
                                     if (loop_codes[code].hasOwnProperty('if') && loop_codes[code]['if']) {
@@ -168,7 +168,7 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                             value: '{#if ' + name + '.' + code + '}{/if}',
                                             snippet: '{#if ' + name + '.' + code + '}$0{/if}',
                                             score: 200,
-                                            docHTML: loop_codes[code]['description']
+                                            docHTML: escapeHtml(loop_codes[code]['description'])
                                         });
                                     }
                                 });
@@ -186,14 +186,14 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                     value: '{#each ' + code + ' as ' + codes[code]['loop']['item'] + '}{/each}',
                                     snippet: '{#each ' + code + ' as ' + codes[code]['loop']['item'] + '}$0{/each}',
                                     score: 400,
-                                    docHTML: codes[code]['description'][0]
+                                    docHTML: escapeHtml(codes[code]['description'][0])
                                 });
                                 completions.push({
                                     caption: '{#each ' + code + ' as ' + codes[code]['loop']['item'] + ' delimited by ", "}{/each}',
                                     value: '{#each ' + code + ' as ' + codes[code]['loop']['item'] + ' delimited by ", "}{/each}',
                                     snippet: '{#each ' + code + ' as ' + codes[code]['loop']['item'] + ' delimited by ", "}$0{/each}',
                                     score: 300,
-                                    docHTML: codes[code]['description'][1]
+                                    docHTML: escapeHtml(codes[code]['description'][1])
                                 });
                             }
                         } else if(!codes[code].hasOwnProperty('code') || codes[code]['code']) {
@@ -201,7 +201,7 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                 caption: '{' + code + '}',
                                 value: '{' + code + '}',
                                 score: 500,
-                                docHTML: codes[code]['description']
+                                docHTML: escapeHtml(codes[code]['description'])
                             });
                         }
                         if (codes[code].hasOwnProperty('if') && codes[code]['if']) {
@@ -210,12 +210,25 @@ define('ace/mode/bookly_completer', function(require, exports, module) {
                                 value: '{#if ' + code + '}{/if}',
                                 snippet: '{#if ' + code + '}$0{/if}',
                                 score: 100,
-                                docHTML: codes[code]['description']
+                                docHTML: escapeHtml(codes[code]['description'])
                             });
                         }
                     });
                 }
                 callback(null, completions);
+
+                function escapeHtml(description) {
+                    if (Array.isArray(description)) {
+                        return description;
+                    } else {
+                        return description
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                    }
+                }
             }
         }
     }

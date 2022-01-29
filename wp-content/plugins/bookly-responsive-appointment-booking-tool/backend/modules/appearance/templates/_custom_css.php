@@ -1,5 +1,6 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 use Bookly\Backend\Components\Controls\Buttons;
+use Bookly\Lib\Utils\Common;
 /** @var string $custom_css custom css text */
 ?>
 
@@ -17,7 +18,7 @@ use Bookly\Backend\Components\Controls\Buttons;
             <div class="modal-body">
                 <div class="form-group">
                     <label for="bookly-custom-css" class="control-label"><?php esc_html_e( 'Set up your custom CSS styles', 'bookly' ) ?></label>
-                    <textarea id="bookly-custom-css" class="form-control" rows="10"><?php echo $custom_css ?></textarea>
+                    <textarea id="bookly-custom-css" class="form-control" rows="10"><?php echo Common::stripScripts( $custom_css ) ?></textarea>
                 </div>
             </div>
             <div class="modal-footer">

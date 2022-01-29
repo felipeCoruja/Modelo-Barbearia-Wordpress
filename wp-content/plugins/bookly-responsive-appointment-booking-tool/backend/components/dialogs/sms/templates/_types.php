@@ -66,6 +66,11 @@ use Bookly\Lib\Config;
                                 data-recipients='["staff","admin","custom"]'
                                 data-icon='<?php echo esc_attr( Notification::getIcon( Notification::TYPE_STAFF_WAITING_LIST ) ) ?>'
                                 data-attach='[]'><?php echo esc_attr( Notification::getTitle( Notification::TYPE_STAFF_WAITING_LIST ) ) ?></option>
+                        <option value="<?php echo Notification::TYPE_FREE_PLACE_WAITING_LIST ?>"
+                                data-set="instantly"
+                                data-recipients='["staff","admin","custom","customer"]'
+                                data-icon='<?php echo esc_attr( Notification::getIcon( Notification::TYPE_FREE_PLACE_WAITING_LIST ) ) ?>'
+                                data-attach='[]'><?php echo esc_attr( Notification::getTitle( Notification::TYPE_FREE_PLACE_WAITING_LIST ) ) ?></option>
                     <?php endif ?>
                     <?php if ( Config::proActive() ): ?>
                         <option value="<?php echo Notification::TYPE_VERIFY_PHONE ?>"

@@ -118,34 +118,37 @@ class Payment extends Lib\Base\Entity
 
     /**
      * @param DataHolders\Order $order
-     * @param Lib\CartInfo      $cart_info
+     * @param Lib\CartInfo $cart_info
+     * @param array $extra
      * @return $this
      */
-    public function setDetailsFromOrder( DataHolders\Order $order, Lib\CartInfo $cart_info )
+    public function setDetailsFromOrder( DataHolders\Order $order, Lib\CartInfo $cart_info, $extra = array() )
     {
         $extras_multiply_nop = (int) get_option( 'bookly_service_extras_multiply_nop', 1 );
 
         $details = array(
-            'items'               => array(),
-            'coupon'              => null,
-            'subtotal'            => array( 'price' => 0, 'deposit' => 0 ),
-            'customer'            => $order->getCustomer()->getFullName(),
-            'tax_in_price'        => 'excluded',
-            'tax_paid'            => null,
+            'items' => array(),
+            'coupon' => null,
+            'subtotal' => array( 'price' => 0, 'deposit' => 0 ),
+            'customer' => $order->getCustomer()->getFullName(),
+            'tax_in_price' => 'excluded',
+            'tax_paid' => null,
             'extras_multiply_nop' => $extras_multiply_nop,
-            'gateway'             => $cart_info->getGateway()
+            'gateway' => $cart_info->getGateway(),
+            'gateway_ref_id' => isset( $extra['reference_id'] ) ? $extra['reference_id'] : null,
+            'tips' => $cart_info->getUserData()->getTips(),
         );
 
-        $rates = (array) Lib\Proxy\Taxes::getServiceTaxRates();
-        foreach ( $order->getItems() as $item ) {
-            $items = $item->isSeries() ? $item->getItems() : array( $item );
+        $rates = Lib\Proxy\Taxes::getServiceTaxRates() ?: array();
+        foreach ( $order->getItems() as $order_item ) {
+            $items = $order_item->isSeries() ? $order_item->getItems() : array( $order_item );
             /** @var DataHolders\Item $sub_item */
             foreach ( $items as $sub_item ) {
                 if ( $sub_item->getCA()->getPaymentId() != $this->getId() ) {
                     // Skip items not related to this payment (e.g. series items with no associated payment).
                     continue;
                 }
-                $extras    = array();
+                $extras = array();
                 $extras_price = 0;
                 $sub_items = array();
                 if ( $sub_item->isCollaborative() || $sub_item->isCompound() ) {
@@ -160,22 +163,22 @@ class Payment extends Lib\Base\Entity
                         $_extras = json_decode( $item->getCA()->getExtras(), true );
                         $service_id = $item->getService()->getId();
                         $rate  = array_key_exists( $service_id, $rates ) ? $rates[ $service_id ] : 0;
-                        /** @var \BooklyServiceExtras\Lib\Entities\ServiceExtra $extra */
-                        foreach ( (array) Lib\Proxy\ServiceExtras::findByIds( array_keys( $_extras ) ) as $extra ) {
-                            $quantity = (int) $_extras[ $extra->getId() ];
-                            $extras_amount = $extra->getPrice() * $quantity;
+                        /** @var \BooklyServiceExtras\Lib\Entities\ServiceExtra $service_extra */
+                        foreach ( Lib\Proxy\ServiceExtras::findByIds( array_keys( $_extras ) ) ?: array() as $service_extra ) {
+                            $quantity = (int) $_extras[ $service_extra->getId() ];
+                            $extras_amount = $service_extra->getPrice() * $quantity;
                             if ( $extras_multiply_nop ) {
                                 $extras_amount *= $item->getCA()->getNumberOfPersons();
                             }
                             $extras[] = array(
-                                'title'    => $extra->getTitle(),
-                                'price'    => $extra->getPrice(),
+                                'title' => $service_extra->getTitle(),
+                                'price' => $service_extra->getPrice(),
                                 'quantity' => $quantity,
-                                'tax'      => Lib\Config::taxesActive()
+                                'tax' => Lib\Config::taxesActive()
                                     ? Lib\Proxy\Taxes::calculateTax( $extras_amount, $rate )
-                                    : null
+                                    : null,
                             );
-                            $extras_price += $extra->getPrice();
+                            $extras_price += $service_extra->getPrice();
                         }
                     }
                 }
@@ -184,7 +187,7 @@ class Payment extends Lib\Base\Entity
 
                 $deposit_format = null;
                 if ( ! $wait_listed ) {
-                    $price  = $sub_item->getServicePrice() * $sub_item->getCA()->getNumberOfPersons();
+                    $price = $sub_item->getServicePrice() * $sub_item->getCA()->getNumberOfPersons();
                     $price += Lib\Proxy\Discounts::prepareServicePrice( $extras_multiply_nop ? $extras_price * $sub_item->getCA()->getNumberOfPersons() : $extras_price, $sub_item->getService()->getId(), $sub_item->getCA()->getNumberOfPersons() );
 
                     $details['subtotal']['price']   += $price;
@@ -256,6 +259,7 @@ class Payment extends Lib\Base\Entity
                 'coupon' => $details['coupon'],
                 'price_correction' => $this->gateway_price_correction,
                 'gateway' => $details['gateway'],
+                'gateway_ref_id' => isset ( $details['gateway_ref_id'] ) ? $details['gateway_ref_id'] : null,
                 'paid' => $this->paid,
                 'tax_paid' => $details['tax_paid'],
                 'total' => $this->total,
@@ -263,6 +267,7 @@ class Payment extends Lib\Base\Entity
                 'tax_in_price' => $details['tax_in_price'],
                 'from_backend' => (bool) ( isset( $details['from_backend'] ) ? $details['from_backend'] : false ),
                 'extras_multiply_nop' => (bool) ( isset ( $details['extras_multiply_nop'] ) ? $details['extras_multiply_nop'] : true ),
+                'tips' => (float) ( isset ( $details['tips'] ) ? $details['tips'] : 0 ),
             ),
             'adjustments' => isset( $details['adjustments'] ) ? $details['adjustments'] : array(),
         );

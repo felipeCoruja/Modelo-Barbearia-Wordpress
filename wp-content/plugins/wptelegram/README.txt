@@ -1,11 +1,11 @@
 === WP Telegram (Auto Post and Notifications) ===
-Contributors: manzoorwanijk
-Donate link: https://paypal.me/manzoorwanijk
+Contributors: wpsocio, irshadahmad21
+Donate link: https://wpsocio.com
 Tags: telegram, notifications, posts, channel, group
-Requires at least: 5.4
-Tested up to: 5.8.1
+Requires at least: 5.7
+Tested up to: 5.8.2
 Requires PHP: 7.0
-Stable tag: 3.1.3
+Stable tag: 3.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,9 +13,6 @@ Integrate your WordPress site perfectly with Telegram with full control.
 
 == Description ==
 Integrate your WordPress site perfectly with Telegram with full control.
-
-Try it out without installing on your own website
-[https://tastewp.com/new?pre-installed-plugin-slug=wptelegram](https://tastewp.com/new?pre-installed-plugin-slug=wptelegram&redirect=wp-admin/admin.php?page=wptelegram&ni=true)
 
 == Excellent LIVE Support on Telegram ==
 
@@ -94,7 +91,7 @@ https://www.youtube.com/watch?v=gVJCtwkorMA
 *	Twitter [@WPTelegram](https://twitter.com/WPTelegram)
 
 **Contribution**
-Development occurs on [Github](https://github.com/manzoorwanijk/wptelegram), and all contributions welcome.
+Development occurs on [Github](https://github.com/wpsocio/wptelegram), and all contributions welcome.
 
 **Translations**
 
@@ -207,6 +204,19 @@ Yes, all you need to do is to setup **Private Notifications** module and use the
 13. Post Edit Page (Block Editor)
 
 == Changelog ==
+
+= 3.1.7 =
+- Added "Protect content" option to Post to Telegram.
+
+= 3.1.6 =
+- Misc bug fixes
+- Fixed some typos
+
+= 3.1.5 =
+- Added override option for Send Featured Image.
+
+= 3.1.4 =
+- Fixed posts not sent when Formatting is None
 
 = 3.1.3 =
 - Added `{post_slug}` macro

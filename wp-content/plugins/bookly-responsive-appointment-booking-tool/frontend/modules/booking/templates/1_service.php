@@ -2,10 +2,10 @@
 use Bookly\Frontend\Modules\Booking\Proxy;
 use Bookly\Lib\Utils\Common;
 /** @var Bookly\Lib\UserBookingData $userData */
-echo $progress_tracker;
+echo Common::stripScripts( $progress_tracker );
 ?>
 <div class="bookly-service-step">
-    <div class="bookly-box bookly-bold"><?php echo $info_text ?></div>
+    <div class="bookly-box bookly-bold"><?php echo Common::html( $info_text ) ?></div>
     <div class="bookly-mobile-step-1 bookly-js-mobile-step-1">
         <div class="bookly-js-chain"></div>
         <div class="bookly-nav-steps bookly-box">
@@ -34,9 +34,9 @@ echo $progress_tracker;
                     <div class="bookly-week-days bookly-js-week-days bookly-table bookly-left bookly-mobile-float-none">
                         <?php foreach ( $days as $key => $day ) : ?>
                             <div>
-                                <span class="bookly-bold"><?php echo $day ?></span>
+                                <span class="bookly-bold"><?php echo esc_html( $day ) ?></span>
                                 <label<?php if ( in_array( $key, $days_checked ) ) : ?> class="active"<?php endif ?>>
-                                    <input class="bookly-js-week-day bookly-js-week-day-<?php echo $key ?>" value="<?php echo $key ?>" <?php checked( in_array( $key, $days_checked ) ) ?> type="checkbox"/>
+                                    <input class="bookly-js-week-day bookly-js-week-day-<?php echo esc_attr( $key ) ?>" value="<?php echo esc_attr( $key ) ?>" <?php checked( in_array( $key, $days_checked ) ) ?> type="checkbox"/>
                                 </label>
                             </div>
                         <?php endforeach ?>

@@ -32,6 +32,13 @@
     -webkit-appearance: revert;
 }
 
+#bookly-tbs .bookly-editable{
+    display: inline-block;
+    line-height: 16px;
+    min-width: 8px;
+    min-height: 14px;
+}
+
 @media (max-width: 767px) {
     #bookly-tbs .bookly-form .bookly-progress-tracker {
         display: none !important;

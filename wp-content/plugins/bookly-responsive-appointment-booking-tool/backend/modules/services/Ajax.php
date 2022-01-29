@@ -48,8 +48,9 @@ class Ajax extends Page
                     case 'category_name':
                         $fields[] = 'c.name';
                         break;
+                    case 'id':
                     case 'title':
-                        $fields[] = 's.title';
+                        $fields[] = 's.' . $column['data'];
                         break;
                 }
             }
@@ -126,14 +127,14 @@ class Ajax extends Page
         ! Lib\Config::proActive() &&
         get_option( 'bookly_updated_from_legacy_version' ) != 'lite' &&
         Lib\Entities\Service::query()->count() > 4 &&
-        wp_send_json_error( array( 'message' => Limitation::getHtml() ) );
+        wp_send_json_error( array( 'message' => Limitation\Notice::forNewService() ) );
 
         $form = new Forms\Service();
         $form->bind( self::postParameters() );
         $form->getObject()->setDuration( Lib\Config::getTimeSlotLength() );
         $service = $form->save();
 
-        Proxy\Shared::serviceCreated( $service, self::postParameters() );
+        Proxy\Shared::serviceCreated( $service );
 
         $sub_services_count = array_sum( array_map( function ( $sub_service ) {
             /** @var Lib\Entities\Service $sub_service */
@@ -258,7 +259,7 @@ class Ajax extends Page
         ! Lib\Config::proActive() &&
         get_option( 'bookly_updated_from_legacy_version' ) != 'lite' &&
         Lib\Entities\Service::query()->count() > 4 &&
-        wp_send_json_error( array( 'message' => Limitation::getHtml() ) );
+        wp_send_json_error( array( 'message' => Limitation\Notice::forNewService() ) );
         $service_id = self::parameter( 'service_id' );
         $service    = Lib\Entities\Service::find( $service_id );
         if ( $service ) {

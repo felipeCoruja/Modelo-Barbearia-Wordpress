@@ -58,13 +58,12 @@ class Tools extends Lib\Base\Component
         ) );
 
         wp_localize_script( 'bookly-bookly-form-settings.js', 'BooklyFormShortCodeL10n', array(
-            'csrfToken'      => Lib\Utils\Common::getCsrfToken(),
             'locationCustom' => (int) Lib\Proxy\Locations::servicesPerLocationAllowed(),
-            'locations'      => $casest['locations'],
-            'categories'     => $casest['categories'],
-            'services'       => $casest['services'],
-            'staff'          => $casest['staff'],
-            'title'          => __( 'Insert Appointment Booking Form', 'bookly' ),
+            'locations' => $casest['locations'],
+            'categories' => $casest['categories'],
+            'services' => $casest['services'],
+            'staff' => $casest['staff'],
+            'title' => __( 'Insert Appointment Booking Form', 'bookly' ),
         ) );
     }
 

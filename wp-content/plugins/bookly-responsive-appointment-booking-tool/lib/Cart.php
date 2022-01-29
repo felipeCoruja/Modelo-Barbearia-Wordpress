@@ -150,13 +150,20 @@ class Cart
     public function save( DataHolders\Order $order, $time_zone, $time_zone_offset )
     {
         $item_key = 0;
+        $orders_entity = new Entities\Order();
+        $orders_entity
+            ->setToken( Common::generateToken( get_class( $orders_entity ), 'token' ) )
+            ->save();
+
+        $this->userData->setOrderId( $orders_entity->getId() );
+
         foreach ( $this->getItems() as $cart_item ) {
             // Init.
-            $payment_id    = $order->hasPayment() ? $order->getPayment()->getId() : null;
-            $service       = $cart_item->getService();
-            $series        = null;
+            $payment_id = $order->hasPayment() ? $order->getPayment()->getId() : null;
+            $service = $cart_item->getService();
+            $series = null;
             $collaborative = null;
-            $compound      = null;
+            $compound = null;
 
             // Whether to put this item on waiting list.
             $put_on_waiting_list = Config::waitingListActive() && get_option( 'bookly_waiting_list_enabled' ) && $cart_item->toBePutOnWaitingList();
@@ -238,9 +245,9 @@ class Cart
                 if ( $start_datetime !== null ) {
                     $appointment->loadBy( array(
                         'service_id' => $service_id,
-                        'staff_id'   => $staff_id,
+                        'staff_id' => $staff_id,
                         'start_date' => $start_datetime,
-                        'end_date'   => $end_datetime,
+                        'end_date' => $end_datetime,
                     ) );
                 }
                 if ( $appointment->isLoaded() ) {
@@ -287,6 +294,7 @@ class Cart
                     ->setCustomer( $order->getCustomer() )
                     ->setAppointment( $appointment )
                     ->setPaymentId( $payment_id )
+                    ->setOrderId( $orders_entity->getId() )
                     ->setNumberOfPersons( $cart_item->getNumberOfPersons() )
                     ->setUnits( $cart_item->getUnits() )
                     ->setNotes( $this->userData->getNotes() )

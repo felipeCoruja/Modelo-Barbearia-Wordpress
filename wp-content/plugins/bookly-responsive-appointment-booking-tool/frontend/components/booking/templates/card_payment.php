@@ -11,12 +11,12 @@
         <div>
             <select class="bookly-card-exp" name="card_exp_month">
                 <?php for ( $i = 1; $i <= 12; ++ $i ) : ?>
-                    <option value="<?php echo $i ?>"><?php printf( '%02d', $i ) ?></option>
+                    <option value="<?php echo esc_attr( $i ) ?>"><?php echo esc_html( sprintf( '%02d', $i ) ) ?></option>
                 <?php endfor ?>
             </select>
             <select class="bookly-card-exp" name="card_exp_year">
                 <?php for ( $i = date( 'Y' ); $i <= date( 'Y' ) + 10; ++ $i ) : ?>
-                    <option value="<?php echo $i ?>"><?php echo $i ?></option>
+                    <option value="<?php echo esc_attr( $i ) ?>"><?php echo esc_html( $i ) ?></option>
                 <?php endfor ?>
             </select>
         </div>

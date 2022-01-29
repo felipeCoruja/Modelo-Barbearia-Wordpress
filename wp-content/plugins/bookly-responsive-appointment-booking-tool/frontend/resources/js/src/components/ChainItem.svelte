@@ -28,6 +28,7 @@
     export let hasDropBtn = false;
     export let showDropBtn = false;
     export let l10n = {};
+    export let date_from_element = null;
 
     const dispatch = createEventDispatcher();
 
@@ -155,6 +156,10 @@
                     categoryItems[id] = category;
                 }
             });
+            if (categoryId && jQuery.inArray(categoryId, categoryIds) === -1) {
+                categoryId = 0;
+                categorySelected = false;
+            }
             jQuery.each(services, (id, service) => {
                 if (jQuery.inArray(id, serviceIds) > -1) {
                     if (!categoryId || !categorySelected || service.category_id === categoryId) {
@@ -357,6 +362,7 @@
     }
 
     function onServiceChange(event) {
+        let dateMin = false;
         srvMinCapacity = false;
         srvMaxCapacity = false;
         serviceId = event.detail;
@@ -370,8 +376,22 @@
             if (staffId && !(serviceId in staff[staffId].services)) {
                 staffId = 0;
             }
+            if (date_from_element[0]) {
+                dateMin = services[serviceId].hasOwnProperty('min_time_prior_booking') ? services[serviceId].min_time_prior_booking : date_from_element.data('date_min');
+            }
         } else if (!categorySelected) {
             categoryId = 0;
+            if (date_from_element[0]) {
+                dateMin = date_from_element.data('date_min');
+            }
+        }
+        if (date_from_element[0]) {
+            date_from_element.pickadate('picker').set('min', dateMin);
+            if (date_from_element.data('updated')) {
+                date_from_element.pickadate('picker').set('select', date_from_element.pickadate('picker').get('select'));
+            } else {
+                date_from_element.pickadate('picker').set('select', dateMin);
+            }
         }
     }
 

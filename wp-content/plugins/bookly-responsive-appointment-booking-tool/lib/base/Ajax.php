@@ -48,8 +48,12 @@ abstract class Ajax extends Component
     public static function forward( $action, $check_csrf = true, $check_access = true )
     {
         if ( ( ! $check_csrf || static::csrfTokenValid( $action ) ) && ( ! $check_access || static::hasAccess( $action ) ) ) {
+            $original_timezone = date_default_timezone_get();
+            // @codingStandardsIgnoreStart
             date_default_timezone_set( 'UTC' );
             call_user_func( array( get_called_class(), $action ) );
+            date_default_timezone_set( $original_timezone );
+            // @codingStandardsIgnoreEnd
         } else {
             wp_die( 'Bookly: ' . __( 'You do not have sufficient permissions to access this page.' ) );
         }

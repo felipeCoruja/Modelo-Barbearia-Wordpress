@@ -408,6 +408,16 @@ class Woo_Product_Carousel extends Widget_Base {
             ]
         );
 
+	    $this->add_control(
+		    'eael_product_carousel_image_clickable',
+		    [
+			    'label' => esc_html__('Image Clickable?', 'essential-addons-for-elementor-lite'),
+			    'type' => Controls_Manager::SWITCHER,
+			    'return_value' => 'yes',
+			    'default' => 'no',
+		    ]
+	    );
+
         $this->end_controls_section();
     }
     
@@ -808,11 +818,11 @@ class Woo_Product_Carousel extends Widget_Base {
                 'options'   => [
                     'left'  => [
                         'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-                        'icon'  => 'fa fa-align-left',
+                        'icon'  => 'eicon-text-align-left',
                     ],
                     'right' => [
                         'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-                        'icon'  => 'fa fa-align-right',
+                        'icon'  => 'eicon-text-align-right',
                     ],
                 ],
                 'condition' => [
@@ -857,15 +867,15 @@ class Woo_Product_Carousel extends Widget_Base {
                 'options'   => [
                     'left'   => [
                         'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-                        'icon'  => 'fa fa-align-left',
+                        'icon'  => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => __( 'Center', 'essential-addons-for-elementor-lite' ),
-                        'icon'  => 'fa fa-align-center',
+                        'icon'  => 'eicon-text-align-center',
                     ],
                     'right'  => [
                         'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-                        'icon'  => 'fa fa-align-right',
+                        'icon'  => 'eicon-text-align-right',
                     ],
                 ],
                 'default'   => 'center',
@@ -2888,7 +2898,7 @@ class Woo_Product_Carousel extends Widget_Base {
 	                if ( $query->have_posts() ):
                         echo '<div '.$this->get_render_attribute_string( 'eael-woo-product-carousel-wrap' ).'>';
                             do_action( 'eael_woo_before_product_loop' );
-                            $settings['eael_page_id'] = get_the_ID();
+		                    $settings['eael_page_id'] = $this->page_id ? $this->page_id : get_the_ID();
                             echo '<ul class="swiper-wrapper products">';
                             while ( $query->have_posts() ) {
                                 $query->the_post();

@@ -130,7 +130,7 @@ class Woo_Checkout extends Widget_Base {
 			$this->add_control(
 				'eael_woo_checkout_pro_enable_warning',
 				[
-					'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.net/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
+					'label' => sprintf( '<a target="_blank" href="https://wpdeveloper.com/upgrade/ea-pro">%s</a>', esc_html__('Only Available in Pro Version!', 'essential-addons-for-elementor-lite')),
 					'type' => Controls_Manager::RAW_HTML,
 					'condition' => [
 						'ea_woo_checkout_layout' => ['multi-steps', 'split'],
@@ -2696,6 +2696,7 @@ class Woo_Checkout extends Widget_Base {
             'ea_woo_checkout_shop_link' => $settings['ea_woo_checkout_shop_link'],
             'ea_woo_checkout_shop_link_text' => $settings['ea_woo_checkout_shop_link_text'],
             'ea_woo_checkout_table_subtotal_text' => $settings['ea_woo_checkout_table_subtotal_text'],
+            'ea_woo_checkout_table_shipping_text' => $settings['ea_woo_checkout_table_shipping_text'],
             'ea_woo_checkout_table_total_text' => $settings['ea_woo_checkout_table_total_text'],
         ];
         $this->ea_woo_checkout_add_actions($settings);

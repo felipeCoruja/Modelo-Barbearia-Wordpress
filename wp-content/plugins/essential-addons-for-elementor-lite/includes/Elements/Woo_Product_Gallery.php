@@ -54,7 +54,7 @@ class Woo_Product_Gallery extends Widget_Base {
 	}
 
 	public function get_categories() {
-		return [ 'essential-addons-for-elementor-lite' ];
+		return [ 'essential-addons-elementor' ];
 	}
 
 	public function get_keywords() {
@@ -183,7 +183,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_terms_horizontal_align',
 			[
 				'label'     => __( 'Alignment', 'essential-addons-for-elementor-lite' ),
@@ -191,15 +191,15 @@ class Woo_Product_Gallery extends Widget_Base {
 				'options'   => [
 					'left'   => [
 						'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-left',
+						'icon'  => 'eicon-text-align-left',
 					],
 					'center' => [
 						'title' => __( 'Center', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-center',
+						'icon'  => 'eicon-text-align-center',
 					],
 					'right'  => [
 						'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-right',
+						'icon'  => 'eicon-text-align-right',
 					],
 				],
 				'default'   => 'center',
@@ -221,11 +221,11 @@ class Woo_Product_Gallery extends Widget_Base {
 				'options'   => [
 					'row'         => [
 						'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-left',
+						'icon'  => 'eicon-text-align-left',
 					],
 					'row-reverse' => [
 						'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-right',
+						'icon'  => 'eicon-text-align-right',
 					],
 				],
 				'default'   => 'row',
@@ -550,15 +550,15 @@ class Woo_Product_Gallery extends Widget_Base {
 				'options'   => [
 					'left'   => [
 						'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-left',
+						'icon' => 'eicon-text-align-left',
 					],
 					'center' => [
 						'title' => __( 'Center', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-center',
+						'icon' => 'eicon-text-align-center',
 					],
 					'right'  => [
 						'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-right',
+						'icon' => 'eicon-text-align-right',
 					],
 				],
 				'default'   => 'center',
@@ -1200,7 +1200,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_margin',
 			[
 				'label'      => __( 'Margin', 'essential-addons-for-elementor-lite' ),
@@ -1212,7 +1212,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_padding',
 			[
 				'label'      => __( 'Padding', 'essential-addons-for-elementor-lite' ),
@@ -1224,7 +1224,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_radius',
 			[
 				'label'      => __( 'Radius', 'essential-addons-for-elementor-lite' ),
@@ -1262,7 +1262,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_item_margin',
 			[
 				'label'      => __( 'Margin', 'essential-addons-for-elementor-lite' ),
@@ -1274,7 +1274,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_item_padding',
 			[
 				'label'      => __( 'Padding', 'essential-addons-for-elementor-lite' ),
@@ -1286,7 +1286,7 @@ class Woo_Product_Gallery extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		$this->add_responsive_control(
 			'eael_product_gallery_item_radius',
 			[
 				'label'      => __( 'Radius', 'essential-addons-for-elementor-lite' ),
@@ -1517,11 +1517,11 @@ class Woo_Product_Gallery extends Widget_Base {
 				'options' => [
 					'left'  => [
 						'title' => __( 'Left', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-left',
+						'icon' => 'eicon-text-align-left',
 					],
 					'right' => [
 						'title' => __( 'Right', 'essential-addons-for-elementor-lite' ),
-						'icon'  => 'fa fa-align-right',
+						'icon' => 'eicon-text-align-right',
 					],
 				],
 			]
@@ -2369,11 +2369,16 @@ class Woo_Product_Gallery extends Widget_Base {
 				$template                         = $this->get_template( $settings[ 'eael_product_gallery_dynamic_template' ] );
 				$settings[ 'loadable_file_name' ] = $this->get_filename_only( $template );
 				$dir_name                         = $this->get_temp_dir_name( $settings[ 'loadable_file_name' ] );
+				$found_posts                      = 0;
 
 				if ( file_exists( $template ) ) {
-					$settings[ 'eael_page_id' ] = get_the_ID();
+					$settings['eael_page_id'] = $this->page_id ? $this->page_id : get_the_ID();
 					$query = new \WP_Query( $args );
 					if ( $query->have_posts() ) {
+						$found_posts      = $query->found_posts;
+						$max_page         = ceil( $found_posts / absint( $args['posts_per_page'] ) );
+						$args['max_page'] = $max_page;
+
 						echo '<ul class="products eael-post-appender eael-post-appender-' . $this->get_id() . '" data-layout-mode="' . $settings[ "eael_product_gallery_items_layout" ] . '">';
 						while ( $query->have_posts() ) {
 							$query->the_post();
@@ -2388,7 +2393,9 @@ class Woo_Product_Gallery extends Widget_Base {
 					_e( '<p class="no-posts-found">No layout found!</p>', 'essential-addons-for-elementor-lite' );
 				}
 
-				$this->print_load_more_button( $settings, $args, $dir_name );
+				if ( $found_posts > $args['posts_per_page'] ) {
+					$this->print_load_more_button( $settings, $args, $dir_name );
+				}
 				?>
             </div>
         </div>

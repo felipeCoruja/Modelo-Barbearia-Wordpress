@@ -51,9 +51,8 @@ class Widget extends Lib\Base\Component
 
         self::enqueueScripts( array(
             'module' => array(
-                'js/Chart.min.js',
-                'js/Chart.bundle.min.js'       => array( 'bookly-Chart.min.js' ),
-                'js/appointments-dashboard.js' => array( 'bookly-Chart.bundle.min.js' ),
+                'js/chart.min.js',
+                'js/appointments-dashboard.js' => array( 'bookly-chart.min.js' ),
             ),
         ) );
 

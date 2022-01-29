@@ -318,27 +318,38 @@ class Scheduler
         foreach ( $this->finder->getSlots() as $group ) {
             /** @var Lib\Slots\Range $slot */
             foreach ( $group as $slot ) {
-                /** @var DatePoint $client_start_dp */
-                $client_start_dp = $slot->start()->toClientTz();
-                $data  = $slot->buildSlotData();
-                $title = $client_start_dp->formatI18n( get_option( 'time_format' ) );
-                if ( $this->with_options ) {
-                    $options[] = array(
-                        'value'    => json_encode( $data ),
-                        'title'    => $title,
-                        'disabled' => $slot->fullyBooked(),
-                    );
+                $data = $slot->buildSlotData();
+                // Check if we already have this slot in results
+                $has_slot = false;
+                $_data = json_encode( $data );
+                foreach ( $this->slots as $_slot ) {
+                    if ( $_slot['slots'] === $_data ) {
+                        $has_slot = true;
+                        break;
+                    }
                 }
-                if ( $client_res_dp === null && $slot->notFullyBooked() && $client_start_dp->gte( $client_req_dp ) ) {
-                    $client_res_dp = $client_start_dp;
-                    $slots         = $data;
-
-                    if ( ! $this->with_options ) {
+                if ( ! $has_slot ) {
+                    /** @var DatePoint $client_start_dp */
+                    $client_start_dp = $slot->start()->toClientTz();
+                    $title = $client_start_dp->formatI18n( get_option( 'time_format' ) );
+                    if ( $this->with_options ) {
                         $options[] = array(
                             'value' => json_encode( $data ),
                             'title' => $title,
+                            'disabled' => $slot->fullyBooked(),
                         );
-                        break;
+                    }
+                    if ( $client_res_dp === null && $slot->notFullyBooked() && $client_start_dp->gte( $client_req_dp ) ) {
+                        $client_res_dp = $client_start_dp;
+                        $slots = $data;
+
+                        if ( ! $this->with_options ) {
+                            $options[] = array(
+                                'value' => json_encode( $data ),
+                                'title' => $title,
+                            );
+                            break;
+                        }
                     }
                 }
             }

@@ -11,6 +11,7 @@ use Bookly\Lib\Utils\Price;
 
 /**
  * Class Page
+ *
  * @package Bookly\Backend\Modules\Calendar
  */
 class Page extends Lib\Base\Ajax
@@ -29,20 +30,18 @@ class Page extends Lib\Base\Ajax
                 $staff_members = Staff::query()
                     ->whereNot( 'visibility', 'archive' )
                     ->sortBy( 'position' )
-                    ->find()
-                ;
+                    ->find();
                 $staff_dropdown_data = Lib\Proxy\Pro::getStaffDataForDropDown();
             } else {
                 $staff_members = Staff::query()
                     ->where( 'wp_user_id', get_current_user_id() )
                     ->whereNot( 'visibility', 'archive' )
-                    ->find()
-                ;
+                    ->find();
                 $staff_dropdown_data = array(
                     0 => array(
-                        'name'  => '',
-                        'items' => empty ( $staff_members ) ? array() : array( $staff_members[0]->getFields() )
-                    )
+                        'name' => '',
+                        'items' => empty ( $staff_members ) ? array() : array( $staff_members[0]->getFields() ),
+                    ),
                 );
             }
         } else {
@@ -50,88 +49,48 @@ class Page extends Lib\Base\Ajax
             $staff_members = $staff ? array( $staff ) : array();
             $staff_dropdown_data = array(
                 0 => array(
-                    'name'  => '',
-                    'items' => empty ( $staff_members ) ? array() : array( $staff_members[0]->getFields() )
-                )
+                    'name' => '',
+                    'items' => empty ( $staff_members ) ? array() : array( $staff_members[0]->getFields() ),
+                ),
             );
         }
 
-        self::enqueueScripts( array(
-            'module' => $staff_members
-                ? array(
-                    'js/event-calendar.min.js' => array( 'bookly-backend-globals' ),
-                    'js/calendar-common.js' => array( 'bookly-event-calendar.min.js' ),
-                    'js/calendar.js'        => array( 'bookly-calendar-common.js', 'bookly-dropdown.js' ),
-                )
-                : array( 'bookly-backend-globals' ),
+        self::enqueueScripts(
+            $staff_members ?
+                array(
+                    'module' => array(
+                        'js/event-calendar.min.js' => array( 'bookly-backend-globals' ),
+                        'js/calendar-common.js' => array( 'bookly-event-calendar.min.js' ),
+                        'js/calendar.js' => array( 'bookly-calendar-common.js', 'bookly-dropdown.js' ),
+                    ),
+                ) :
+                array(
+                    'alias' => array( 'bookly-backend-globals', ),
+                ) );
+
+        self::enqueueStyles( array(
+            'alias' => array( 'bookly-backend-globals', ),
         ) );
 
-        $slot_length_minutes = get_option( 'bookly_gen_time_slot_length', '15' );
-        $slot = new \DateInterval( 'PT' . $slot_length_minutes . 'M' );
-
-        $hidden_days = array();
-        $min_time = '00:00:00';
-        $max_time = '24:00:00';
-        $scroll_time = '08:00:00';
-        // Find min and max business hours
-        $min = $max = null;
-        foreach ( Config::getBusinessHours() as $day => $bh ) {
-            if ( $bh['start'] === null ) {
-                if ( Config::showOnlyBusinessDaysInCalendar() ) {
-                    $hidden_days[] = $day;
-                }
-                continue;
-            }
-            if ( $min === null || $bh['start'] < $min ) {
-                $min = $bh['start'];
-            }
-            if ( $max === null || $bh['end'] > $max ) {
-                $max = $bh['end'];
-            }
-        }
-        if ( $min !== null ) {
-            $scroll_time = $min;
-            if ( Config::showOnlyBusinessHoursInCalendar() ) {
-                $min_time = $min;
-                $max_time = $max;
-            } else if ( $max > '24:00:00' ) {
-                $min_time = DateTime::buildTimeString( DateTime::timeToSeconds( $max ) - DAY_IN_SECONDS );
-                $max_time = $max;
-            }
-        }
-
-        wp_localize_script( 'bookly-calendar.js', 'BooklyL10n', array(
-            'hiddenDays' => $hidden_days,
-            'slotDuration' => $slot->format( '%H:%I:%S' ),
-            'slotMinTime' => $min_time,
-            'slotMaxTime' => $max_time,
-            'scrollTime' => $scroll_time,
-            'locale' => Config::getShortLocale(),
-            'mjsTimeFormat' => DateTime::convertFormat( 'time', DateTime::FORMAT_MOMENT_JS ),
-            'datePicker' => DateTime::datePickerOptions(),
-            'dateRange' => DateTime::dateRangeOptions(),
-            'today' => __( 'Today', 'bookly' ),
-            'week' => __( 'Week', 'bookly' ),
-            'day' => __( 'Day', 'bookly' ),
-            'month' => __( 'Month', 'bookly' ),
-            'list' => __( 'List', 'bookly' ),
-            'noEvents' => __( 'No appointments for selected period.', 'bookly' ),
-            'delete' => __( 'Delete', 'bookly' ),
-            'are_you_sure' => __( 'Are you sure?', 'bookly' ),
-            'filterResourcesWithEvents' => Config::showOnlyStaffWithAppointmentsInCalendarDayView(),
-            'recurring_appointments' => array(
-                'active' => (int) Config::recurringAppointmentsActive(),
-                'title' => __( 'Recurring appointments', 'bookly' ),
-            ),
-            'waiting_list' => array(
-                'active' => (int) Config::waitingListActive(),
-                'title' => __( 'On waiting list', 'bookly' ),
-            ),
-            'packages' => array(
-                'active' => (int) Config::packagesActive(),
-                'title' => __( 'Package', 'bookly' ),
-            ),
-        ) );
+        wp_localize_script( 'bookly-calendar.js', 'BooklyL10n', array_merge(
+            Lib\Utils\Common::getCalendarSettings(),
+            array(
+                'delete' => __( 'Delete', 'bookly' ),
+                'are_you_sure' => __( 'Are you sure?', 'bookly' ),
+                'filterResourcesWithEvents' => Config::showOnlyStaffWithAppointmentsInCalendarDayView(),
+                'recurring_appointments' => array(
+                    'active' => (int) Config::recurringAppointmentsActive(),
+                    'title' => __( 'Recurring appointments', 'bookly' ),
+                ),
+                'waiting_list' => array(
+                    'active' => (int) Config::waitingListActive(),
+                    'title' => __( 'On waiting list', 'bookly' ),
+                ),
+                'packages' => array(
+                    'active' => (int) Config::packagesActive(),
+                    'title' => __( 'Package', 'bookly' ),
+                ),
+            ) ) );
 
         $refresh_rate = get_user_meta( get_current_user_id(), 'bookly_calendar_refresh_rate', true );
         $services_dropdown_data = Common::getServiceDataForDropDown( 's.type = "simple"' );
@@ -155,47 +114,47 @@ class Page extends Lib\Base\Ajax
         $participants = null;
         $coloring_mode = get_option( 'bookly_cal_coloring_mode' );
         $default_codes = array(
-            'amount_due'        => '',
-            'amount_paid'       => '',
-            'appointment_date'  => '',
+            'amount_due' => '',
+            'amount_paid' => '',
+            'appointment_date' => '',
             'appointment_notes' => '',
-            'appointment_time'  => '',
-            'booking_number'    => '',
-            'category_name'     => '',
-            'client_address'    => '',
-            'client_email'      => '',
-            'client_name'       => '',
+            'appointment_time' => '',
+            'booking_number' => '',
+            'category_name' => '',
+            'client_address' => '',
+            'client_email' => '',
+            'client_name' => '',
             'client_first_name' => '',
-            'client_last_name'  => '',
-            'client_phone'      => '',
-            'client_birthday'   => '',
-            'client_note'       => '',
-            'company_address'   => get_option( 'bookly_co_address' ),
-            'company_name'      => get_option( 'bookly_co_name' ),
-            'company_phone'     => get_option( 'bookly_co_phone' ),
-            'company_website'   => get_option( 'bookly_co_website' ),
-            'custom_fields'     => '',
-            'extras'            => '',
-            'extras_total_price'=> 0,
-            'internal_note'     => '',
-            'location_name'     => '',
-            'location_info'     => '',
+            'client_last_name' => '',
+            'client_phone' => '',
+            'client_birthday' => '',
+            'client_note' => '',
+            'company_address' => get_option( 'bookly_co_address' ),
+            'company_name' => get_option( 'bookly_co_name' ),
+            'company_phone' => get_option( 'bookly_co_phone' ),
+            'company_website' => get_option( 'bookly_co_website' ),
+            'custom_fields' => '',
+            'extras' => '',
+            'extras_total_price' => 0,
+            'internal_note' => '',
+            'location_name' => '',
+            'location_info' => '',
             'number_of_persons' => '',
-            'on_waiting_list'   => '',
-            'payment_status'    => '',
-            'payment_type'      => '',
-            'service_capacity'  => '',
-            'service_duration'  => '',
-            'service_info'      => '',
-            'service_name'      => '',
-            'service_price'     => '',
-            'signed_up'         => '',
-            'staff_email'       => '',
-            'staff_info'        => '',
-            'staff_name'        => '',
-            'staff_phone'       => '',
-            'status'            => '',
-            'total_price'       => '',
+            'on_waiting_list' => '',
+            'payment_status' => '',
+            'payment_type' => '',
+            'service_capacity' => '',
+            'service_duration' => '',
+            'service_info' => '',
+            'service_name' => '',
+            'service_price' => '',
+            'signed_up' => '',
+            'staff_email' => '',
+            'staff_info' => '',
+            'staff_name' => '',
+            'staff_phone' => '',
+            'status' => '',
+            'total_price' => '',
         );
         $query
             ->select( 'a.id, ca.series_id, a.staff_any, a.location_id, a.internal_note, a.start_date, DATE_ADD(a.end_date, INTERVAL IF(ca.extras_consider_duration, a.extras_duration, 0) SECOND) AS end_date,
@@ -250,7 +209,7 @@ class Page extends Lib\Base\Ajax
             if ( ! isset ( $appointments[ $appointment['id'] ] ) ) {
                 if ( $convert_tz ) {
                     $appointment['start_date'] = DateTime::convertTimeZone( $appointment['start_date'], $wp_tz, $display_tz );
-                    $appointment['end_date']   = DateTime::convertTimeZone( $appointment['end_date'], $wp_tz, $display_tz );
+                    $appointment['end_date'] = DateTime::convertTimeZone( $appointment['end_date'], $wp_tz, $display_tz );
                 }
                 $appointments[ $appointment['id'] ] = $appointment;
             }
@@ -271,9 +230,9 @@ class Page extends Lib\Base\Ajax
         }
 
         $status_codes = array(
-            CustomerAppointment::STATUS_APPROVED  => 'success',
+            CustomerAppointment::STATUS_APPROVED => 'success',
             CustomerAppointment::STATUS_CANCELLED => 'danger',
-            CustomerAppointment::STATUS_REJECTED  => 'danger',
+            CustomerAppointment::STATUS_REJECTED => 'danger',
         );
         $cancelled_statuses = array(
             CustomerAppointment::STATUS_CANCELLED,
@@ -298,13 +257,13 @@ class Page extends Lib\Base\Ajax
             $codes = $default_codes;
             $codes['appointment_date'] = DateTime::formatDate( $appointment['start_date'] );
             $codes['appointment_time'] = $appointment['duration'] >= DAY_IN_SECONDS && $appointment['start_time_info'] ? $appointment['start_time_info'] : Lib\Utils\DateTime::formatTime( $appointment['start_date'] );
-            $codes['booking_number']   = $appointment['id'];
-            $codes['internal_note']    = esc_html( $appointment['internal_note'] );
-            $codes['on_waiting_list']  = $appointment['on_waiting_list'];
-            $codes['service_name']     = $appointment['service_name'] ? esc_html( $appointment['service_name'] ) : __( 'Untitled', 'bookly' );
-            $codes['service_price']    = Price::format( $appointment['service_price'] * $appointment['units'] );
+            $codes['booking_number'] = $appointment['id'];
+            $codes['internal_note'] = esc_html( $appointment['internal_note'] );
+            $codes['on_waiting_list'] = $appointment['on_waiting_list'];
+            $codes['service_name'] = $appointment['service_name'] ? esc_html( $appointment['service_name'] ) : __( 'Untitled', 'bookly' );
+            $codes['service_price'] = Price::format( $appointment['service_price'] * $appointment['units'] );
             $codes['service_duration'] = DateTime::secondsToInterval( $appointment['duration'] * $appointment['units'] );
-            $codes['signed_up']        = $appointment['total_number_of_persons'];
+            $codes['signed_up'] = $appointment['total_number_of_persons'];
             foreach ( array( 'staff_name', 'staff_phone', 'staff_info', 'staff_email', 'service_info', 'service_capacity', 'category_name' ) as $field ) {
                 $codes[ $field ] = esc_html( $appointment[ $field ] );
             }
@@ -349,7 +308,7 @@ class Page extends Lib\Base\Ajax
             // Display customer information only if there is 1 customer. Don't confuse with number_of_persons.
             if ( $appointment['number_of_persons'] == $appointment['total_number_of_persons'] ) {
                 $participants = 'one';
-                $template     = $one_participant;
+                $template = $one_participant;
                 foreach ( array( 'client_name', 'client_first_name', 'client_last_name', 'client_phone', 'client_email', 'client_birthday' ) as $data_entry ) {
                     $codes[ $data_entry ] = esc_html( $appointment['customers'][0][ $data_entry ] );
                 }
@@ -357,18 +316,18 @@ class Page extends Lib\Base\Ajax
                 $codes['appointment_notes'] = $appointment['appointment_notes'];
                 // Payment.
                 if ( $appointment['total'] ) {
-                    $codes['total_price']    = Price::format( $appointment['total'] );
-                    $codes['amount_paid']    = Price::format( $appointment['paid'] );
-                    $codes['amount_due']     = Price::format( $appointment['total'] - $appointment['paid'] );
-                    $codes['total_price']    = Price::format( $appointment['total'] );
-                    $codes['payment_type']   = Lib\Entities\Payment::typeToString( $appointment['payment_gateway'] );
+                    $codes['total_price'] = Price::format( $appointment['total'] );
+                    $codes['amount_paid'] = Price::format( $appointment['paid'] );
+                    $codes['amount_due'] = Price::format( $appointment['total'] - $appointment['paid'] );
+                    $codes['total_price'] = Price::format( $appointment['total'] );
+                    $codes['payment_type'] = Lib\Entities\Payment::typeToString( $appointment['payment_gateway'] );
                     $codes['payment_status'] = Lib\Entities\Payment::statusToString( $appointment['payment_status'] );
                 }
                 // Status.
                 $codes['status'] = CustomerAppointment::statusToString( $appointment['status'] );
             } else {
                 $participants = 'many';
-                $template     = $many_participants;
+                $template = $many_participants;
             }
             $tooltip = '<i class="fas fa-fw fa-circle mr-1" style="color:%s"></i><span>{service_name}</span>' . $popover_customers . '<span class="d-block text-muted">{appointment_time} - %s</span>';
 
@@ -392,20 +351,20 @@ class Page extends Lib\Base\Ajax
             }
 
             $appointments[ $key ] = array(
-                'id'            => $appointment['id'],
-                'start'         => $appointment['start_date'],
-                'end'           => $appointment['end_date'],
-                'title'         => ' ',
-                'color'         => $color,
-                'resourceId'    => $staff_id,
+                'id' => $appointment['id'],
+                'start' => $appointment['start_date'],
+                'end' => $appointment['end_date'],
+                'title' => ' ',
+                'color' => $color,
+                'resourceId' => $staff_id,
                 'extendedProps' => array(
-                    'tooltip'        => Lib\Utils\Codes::replace( $tooltip, $codes, false ),
-                    'desc'           => Lib\Utils\Codes::replace( $template, $codes, false ),
-                    'staffId'        => $staff_id,
-                    'series_id'      => (int) $appointment['series_id'],
-                    'package_id'     => (int) $appointment['package_id'],
-                    'waitlisted'     => (int) $appointment['on_waiting_list'],
-                    'staff_any'      => (int) $appointment['staff_any'],
+                    'tooltip' => Lib\Utils\Codes::replace( $tooltip, $codes, false ),
+                    'desc' => Lib\Utils\Codes::replace( $template, $codes, false ),
+                    'staffId' => $staff_id,
+                    'series_id' => (int) $appointment['series_id'],
+                    'package_id' => (int) $appointment['package_id'],
+                    'waitlisted' => (int) $appointment['on_waiting_list'],
+                    'staff_any' => (int) $appointment['staff_any'],
                     'overall_status' => $overall_status,
                 ),
             );

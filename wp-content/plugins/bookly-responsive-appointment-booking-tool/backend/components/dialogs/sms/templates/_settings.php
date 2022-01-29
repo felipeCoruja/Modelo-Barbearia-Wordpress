@@ -14,7 +14,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                 <select class="form-control custom-select" class="mt-2 ml-1" name="notification[settings][status]" id="notification_status">
                     <option value="any"><?php esc_html_e( 'Any', 'bookly' ) ?></option>
                     <?php foreach ( $statuses as $status ) : ?>
-                        <option value="<?php echo $status ?>"><?php echo CustomerAppointment::statusToString( $status ) ?></option>
+                        <option value="<?php echo esc_attr( $status ) ?>"><?php echo esc_html( CustomerAppointment::statusToString( $status ) ) ?></option>
                     <?php endforeach ?>
                 </select>
                 <small class="form-text text-muted"><?php esc_html_e( 'Select what status an appointment should have for the notification to be sent.', 'bookly' ) ?></small>
@@ -44,7 +44,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                                     <ul>
                                         <?php foreach ( $category['items'] as $service ) : ?>
                                             <li data-input-name="notification[settings][services][ids][]"
-                                                data-value="<?php echo $service['id'] ?>"
+                                                data-value="<?php echo esc_attr( $service['id'] ) ?>"
                                             >
                                                 <?php echo esc_html( $service['title'] ) ?>
                                             </li>
@@ -78,7 +78,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                     <div>
                         <select class="form-control custom-select" name="notification[settings][offset_hours]">
                             <?php foreach ( array_merge( range( 1, 24 ), range( 48, 336, 24 ), array( 504, 672 ) ) as $hour ) : ?>
-                                <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::secondsToInterval( $hour * HOUR_IN_SECONDS ) ?></option>
+                                <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::secondsToInterval( $hour * HOUR_IN_SECONDS ) ) ?></option>
                             <?php endforeach ?>
                             <option value="43200">30 <?php esc_html_e( 'days', 'bookly' ) ?></option>
                         </select>
@@ -110,11 +110,11 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                             <option value='-2190'><?php echo esc_html( sprintf( _n( '%d month', '%d months', 3, 'bookly' ), 3 ) ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
                             <option value='-1460'><?php echo esc_html( sprintf( _n( '%d month', '%d months', 2, 'bookly' ), 2 ) ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
                             <?php foreach ( array_merge( array( - 672, - 504 ), range( - 336, - 24, 24 ) ) as $hour ) : ?>
-                                <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::secondsToInterval( abs( $hour ) * HOUR_IN_SECONDS ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
+                                <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::secondsToInterval( abs( $hour ) * HOUR_IN_SECONDS ) ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
                             <?php endforeach ?>
                             <option value="0" selected><?php esc_html_e( 'on the same day', 'bookly' ) ?></option>
                             <?php foreach ( array_merge( range( 24, 336, 24 ), array( 504, 672 ) ) as $hour ) : ?>
-                                <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::secondsToInterval( $hour * HOUR_IN_SECONDS ) ?>&nbsp;<?php esc_html_e( 'after', 'bookly' ) ?></option>
+                                <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::secondsToInterval( $hour * HOUR_IN_SECONDS ) ) ?>&nbsp;<?php esc_html_e( 'after', 'bookly' ) ?></option>
                             <?php endforeach ?>
                             <option value='1460'><?php echo esc_html( sprintf( _n( '%d month', '%d months', 2, 'bookly' ), 2 ) ) ?>&nbsp;<?php esc_html_e( 'after', 'bookly' ) ?></option>
                             <option value='2190'><?php echo esc_html( sprintf( _n( '%d month', '%d months', 3, 'bookly' ), 3 ) ) ?>&nbsp;<?php esc_html_e( 'after', 'bookly' ) ?></option>
@@ -129,7 +129,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                     <div>
                         <select class="form-control custom-select" name="notification[settings][at_hour]">
                             <?php foreach ( range( 0, 23 ) as $hour ) : ?>
-                                <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::formatTime( $hour * HOUR_IN_SECONDS ) ?></option>
+                                <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::formatTime( $hour * HOUR_IN_SECONDS ) ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
@@ -149,7 +149,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                 <div>
                     <select class="form-control custom-select" name="notification[settings][offset_before_hours]" id="notification_send_2">
                         <?php foreach ( array_merge( array( - 672, - 504 ), range( - 336, - 24, 24 ) ) as $hour ) : ?>
-                            <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::secondsToInterval( abs( $hour ) * HOUR_IN_SECONDS ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
+                            <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::secondsToInterval( abs( $hour ) * HOUR_IN_SECONDS ) ) ?>&nbsp;<?php esc_html_e( 'before', 'bookly' ) ?></option>
                         <?php endforeach ?>
                         <option value="0" selected><?php esc_html_e( 'on the same day', 'bookly' ) ?></option>
                     </select>
@@ -160,7 +160,7 @@ $service_dropdown_data = Utils\Common::getServiceDataForDropDown( 's.type <> "pa
                 <div>
                     <select class="form-control custom-select" name="notification[settings][before_at_hour]">
                         <?php foreach ( range( 0, 23 ) as $hour ) : ?>
-                            <option value="<?php echo $hour ?>"><?php echo Utils\DateTime::formatTime( $hour * HOUR_IN_SECONDS ) ?></option>
+                            <option value="<?php echo esc_attr( $hour ) ?>"><?php echo esc_html( Utils\DateTime::formatTime( $hour * HOUR_IN_SECONDS ) ) ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>

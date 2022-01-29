@@ -27,9 +27,9 @@ jQuery(function($) {
                 $.each(response.data, function (id, news) {
                     let media = '';
                     if (news.media_type === 'youtube') {
-                        media = '<iframe src="' + news.media_url + '" frameborder="0" width="476" height="261" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                        media = '<iframe class="card-img-top rounded-top" src="' + news.media_url + '" frameborder="0" width="476" height="261" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
                     } else if (news.media_type === 'image') {
-                        media = '<img class="card-img-top" style="height: 261px;object-fit: cover;" src="' + news.media_url + '" alt="Card image cap">';
+                        media = '<img class="card-img-top rounded-top" style="height: 261px;object-fit: cover;" src="' + news.media_url + '" alt="Card image cap">';
                     }
                     $news_list.append(
                         $template.clone().show().html()

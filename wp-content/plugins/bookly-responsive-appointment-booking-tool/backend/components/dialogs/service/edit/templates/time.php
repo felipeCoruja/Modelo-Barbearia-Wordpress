@@ -18,7 +18,7 @@ use Bookly\Backend\Components\Dialogs\Service\Edit\Proxy;
         ?>
         <select id="bookly-service-duration" class="bookly-js-duration form-control custom-select" name="duration">
             <?php foreach ( $options as $option ): ?>
-                <option value="<?php echo $option['value'] ?>" <?php echo $option['selected'] ?>><?php echo $option['label'] ?></option>
+                <option value="<?php echo esc_attr( $option['value'] ) ?>" <?php echo esc_attr( $option['selected'] ) ?>><?php echo esc_html( $option['label'] ) ?></option>
             <?php endforeach ?>
         </select>
         <?php Proxy\CustomDuration::renderServiceDurationHelp() ?>
@@ -51,7 +51,7 @@ use Bookly\Backend\Components\Dialogs\Service\Edit\Proxy;
                     <option value="<?php echo Service::SLOT_LENGTH_AS_SERVICE_DURATION ?>"<?php selected( $service['slot_length'], Service::SLOT_LENGTH_AS_SERVICE_DURATION ) ?>><?php esc_html_e( 'Slot length as service duration', 'bookly' ) ?></option>
                 <?php endif ?>
                 <?php foreach ( array( 300, 600, 720, 900, 1200, 1800, 2700, 3600, 5400, 7200, 10800, 14400, 21600 ) as $duration ): ?>
-                    <option value="<?php echo $duration ?>"<?php selected( $service['slot_length'], $duration ) ?>><?php echo esc_html( DateTime::secondsToInterval( $duration ) ) ?></option>
+                    <option value="<?php echo esc_attr( $duration ) ?>"<?php selected( $service['slot_length'], $duration ) ?>><?php echo esc_html( DateTime::secondsToInterval( $duration ) ) ?></option>
                 <?php endforeach ?>
             </select>
             <small class="form-text text-muted"><?php esc_html_e( 'The time interval which is used as a step when building all time slots for the service at the Time step. The setting overrides global settings in Settings > General. Use Default to apply global settings.', 'bookly' ) ?></small>

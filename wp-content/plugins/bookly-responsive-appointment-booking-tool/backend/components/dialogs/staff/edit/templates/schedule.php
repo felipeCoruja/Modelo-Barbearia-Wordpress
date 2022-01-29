@@ -11,7 +11,7 @@ use Bookly\Backend\Components\Dialogs\Staff\Edit\Proxy;
         <?php Proxy\Locations::renderLocationSwitcher( $staff_id, $location_id, 'custom_schedule' ) ?>
         <?php $schedule->render() ?>
         <?php foreach ( $ss_ids as $id => $index ) : ?>
-            <input type="hidden" name="ssi[<?php echo $id ?>]" value="<?php echo $index ?>" />
+            <input type="hidden" name="ssi[<?php echo esc_attr( $id ) ?>]" value="<?php echo esc_attr( $index ) ?>"/>
         <?php endforeach ?>
 
         <div class="bookly-js-modal-footer">

@@ -130,7 +130,7 @@ global $wp_locale;
                     <div class="bookly-week-days bookly-js-week-days bookly-table bookly-left">
                         <?php foreach ( $wp_locale->weekday_abbrev as $weekday_abbrev ) : ?>
                             <div>
-                                <div class="bookly-font-bold"><?php echo $weekday_abbrev ?></div>
+                                <div class="bookly-font-bold"><?php echo esc_html( $weekday_abbrev ) ?></div>
                                 <label class="active">
                                     <input class="bookly-js-week-day" value="1" checked="checked" type="checkbox">
                                 </label>
@@ -181,7 +181,7 @@ global $wp_locale;
 </div>
 <div style="display: none">
     <?php foreach ( array( 'bookly_l10n_required_service', 'bookly_l10n_required_name', 'bookly_l10n_required_phone', 'bookly_l10n_required_email', 'bookly_l10n_required_employee', 'bookly_l10n_required_location' ) as $validator ) : ?>
-        <div data-option="<?php echo $validator ?>"><?php echo get_option( $validator ) ?></div>
+        <div data-option="<?php echo esc_attr( $validator ) ?>"><?php echo esc_html( get_option( $validator ) ) ?></div>
     <?php endforeach ?>
 </div>
 <style id="bookly-pickadate-style"></style>

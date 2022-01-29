@@ -464,7 +464,7 @@
                 }
             }));
 
-            inspectorElements.push(el('div', {style: {'margin': '-20px 0 1.5em 0', 'font-style': 'italic'}}, 'Please be aware that a value in this field is required in the frontend. If you choose to hide this field, please be sure to select a default value for it'));
+            inspectorElements.push(el('div', {style: {'margin': '-20px 0 1.5em 0', 'font-style': 'italic'}}, BooklyFormL10n.serviceHelp));
 
             // Add staff
             inspectorElements.push(el(components.SelectControl, {

@@ -5,8 +5,8 @@ jQuery(function ($) {
         .on('service.submitForm', {},
             // Bind submit handler for service saving.
             function (event, $panel, data) {
-                let id = data.find(function(value) { return value.name === 'id'; }).value,
-                    title = data.find(function(value) { return value.name === 'title'; }).value;
+                let id = data.find(function (value) { return value.name === 'id'; }).value,
+                    title = $.fn.dataTable.render.text().display(data.find(function (value) { return value.name === 'title'; }).value);
 
                 BooklyServiceOrderDialogL10n.services
                     .find(function(service) { return service.id == id; }).title = title;

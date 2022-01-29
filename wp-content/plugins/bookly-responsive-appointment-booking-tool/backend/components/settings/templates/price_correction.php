@@ -8,12 +8,12 @@ $option_addition = 'bookly_' . $gateway . '_addition';
 <div class="form-group">
     <div class="form-row">
         <div class="col-6">
-            <label for="<?php echo $option_increase ?>"><?php esc_html_e( 'Price correction', 'bookly' ) ?> <span class="text-muted"><?php esc_html_e( 'Increase/Discount (%)', 'bookly' ) ?></span></label>
-            <input type="number" id="<?php echo $option_increase ?>" class="form-control" name="<?php echo $option_increase ?>" value="<?php echo esc_attr( get_option( $option_increase ) ) ?>" min="-100" max="100" step="any" />
+            <label for="<?php echo esc_attr( $option_increase ) ?>"><?php esc_html_e( 'Price correction', 'bookly' ) ?> <span class="text-muted"><?php esc_html_e( 'Increase/Discount (%)', 'bookly' ) ?></span></label>
+            <input type="number" id="<?php echo esc_attr( $option_increase ) ?>" class="form-control" name="<?php echo esc_attr( $option_increase ) ?>" value="<?php echo esc_attr( get_option( $option_increase ) ) ?>" min="-100" max="100" step="any"/>
         </div>
         <div class="col-6">
-            <label for="<?php echo $option_addition ?>"><span class="text-muted"><?php esc_html_e( 'Addition/Deduction', 'bookly' ) ?></span></label>
-            <input type="number" id="<?php echo $option_addition ?>" class="form-control" name="<?php echo $option_addition ?>" value="<?php echo esc_attr( get_option( $option_addition ) ) ?>" step="any" />
+            <label for="<?php echo esc_attr( $option_addition ) ?>"><span class="text-muted"><?php esc_html_e( 'Addition/Deduction', 'bookly' ) ?></span></label>
+            <input type="number" id="<?php echo esc_attr( $option_addition ) ?>" class="form-control" name="<?php echo esc_attr( $option_addition ) ?>" value="<?php echo esc_attr( get_option( $option_addition ) ) ?>" step="any"/>
         </div>
     </div>
     <?php if ( ! in_array( $gateway, array( Payment::TYPE_MOLLIE, Payment::TYPE_PAYSON, Payment::TYPE_STRIPE, Payment::TYPE_CLOUD_STRIPE, Payment::TYPE_PAYUBIZ ) ) ) : ?>

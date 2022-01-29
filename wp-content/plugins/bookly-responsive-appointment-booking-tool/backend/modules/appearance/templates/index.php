@@ -9,7 +9,7 @@ use Bookly\Backend\Modules\Appearance\Proxy;
 ?>
 <?php if ( trim( $custom_css ) ) : ?>
     <style type="text/css">
-        <?php echo $custom_css ?>
+        <?php echo Lib\Utils\Common::stripScripts( $custom_css ) ?>
     </style>
 <?php endif ?>
 
@@ -49,7 +49,7 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                 <?php $i = 1 ?>
                 <?php foreach ( $steps as $data ) : ?>
                     <li class="nav-item text-center" <?php if ( ! $data['show'] ) : ?>style="display: none;"<?php endif ?>>
-                        <a class="nav-link<?php if ( $data['step'] == 1 ) : ?> active<?php endif ?>" href="#bookly-step-<?php echo $data['step'] ?>" data-toggle="bookly-tab"><span class="bookly-js-step-number"><?php echo $data['show'] ? $i++ : $i ?></span>. <?php echo esc_html( $data['title'] ) ?></a>
+                        <a class="nav-link<?php if ( $data['step'] == 1 ) : ?> active<?php endif ?>" href="#bookly-step-<?php echo esc_attr( $data['step'] ) ?>" data-toggle="bookly-tab"><span class="bookly-js-step-number"><?php echo esc_html( $data['show'] ? $i ++ : $i ) ?></span>. <?php echo esc_html( $data['title'] ) ?></a>
                     </li>
                 <?php endforeach ?>
             </ul>
@@ -103,8 +103,12 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                             <div class="col-md-3 my-2">
                                 <?php Inputs::renderCheckBox( __( 'Show each day in one column', 'bookly' ), null, get_option( 'bookly_app_show_day_one_column' ), array( 'id' => 'bookly-show-day-one-column' ) ) ?>
                             </div>
+                            <div class="col-md-3 my-2">
+                                <?php Inputs::renderCheckBox( __( 'Show only the nearest timeslot', 'bookly' ), null, get_option( 'bookly_app_show_single_slot' ), array( 'id' => 'bookly-show-single-slot' ) ) ?>
+                            </div>
                             <?php Proxy\Pro::renderTimeZoneSwitcherCheckbox() ?>
                             <?php Proxy\Shared::renderTimeStepSettings() ?>
+                            <?php Proxy\SpecialHours::renderHighlightSpecialHours() ?>
                         </div>
                     </div>
 
@@ -143,11 +147,15 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                             <?php Proxy\Files::renderShowFiles() ?>
                             <?php Proxy\CustomerInformation::renderShowCustomerInformation() ?>
                             <?php Proxy\Pro::renderShowFacebookButton() ?>
+                            <div class="col-md-3 my-2">
+                                <?php Inputs::renderCheckBox( __( 'Show Terms & Conditions checkbox', 'bookly' ), null, get_option( 'bookly_app_show_terms' ), array( 'id' => 'bookly-show-terms' ) ) ?>
+                            </div>
                         </div>
                     </div>
                     <div class="bookly-js-payment-settings collapse">
                         <div class="row">
                             <?php Proxy\Coupons::renderShowCoupons() ?>
+                            <?php Proxy\Pro::renderShowTips() ?>
                         </div>
                         <?php Proxy\Pro::renderBookingStatesSelector() ?>
                     </div>
@@ -156,6 +164,9 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                         <div class="row">
                             <div class="col-md-3 my-2">
                                 <?php Inputs::renderCheckBox( __( 'Show \'Start over\' button', 'bookly' ), null, get_option( 'bookly_app_show_start_over' ), array( 'id' => 'bookly-show-start-over' ) ) ?>
+                            </div>
+                            <div class="col-md-3 my-2">
+                                <?php Inputs::renderCheckBox( __( 'Show \'Download ICS\' button', 'bookly' ), null, get_option( 'bookly_app_show_download_ics' ), array( 'id' => 'bookly-show-download-ics' ) ) ?>
                             </div>
                             <?php Proxy\Invoices::renderShowDownloadInvoice() ?>
                         </div>
@@ -184,20 +195,33 @@ use Bookly\Backend\Modules\Appearance\Proxy;
                     <div class="card-body">
                         <div class="tab-content">
                             <?php foreach ( $steps as $step => $step_name ) : ?>
-                                <div id="bookly-step-<?php echo $step ?>" class="tab-pane <?php if ( $step == 1 ) : ?>active<?php endif ?>" data-target="<?php echo $step ?>">
+                                <div id="bookly-step-<?php echo esc_attr( $step ) ?>" class="tab-pane <?php if ( $step == 1 ) : ?>active<?php endif ?>" data-target="<?php echo esc_attr( $step ) ?>">
                                     <?php // Render unique data per step
                                     switch ( $step ) :
-                                        case 1: include '_1_service.php';   break;
-                                        case 2: Proxy\ServiceExtras::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
+                                        case 1:
+                                            include '_1_service.php';
                                             break;
-                                        case 3: include '_3_time.php';      break;
-                                        case 4: Proxy\RecurringAppointments::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
+                                        case 2:
+                                            Proxy\ServiceExtras::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
                                             break;
-                                        case 5: Proxy\Cart::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
+                                        case 3:
+                                            include '_3_time.php';
                                             break;
-                                        case 6: include '_6_details.php';   break;
-                                        case 7: include '_7_payment.php';   break;
-                                        case 8: include '_8_complete.php';  break;
+                                        case 4:
+                                            Proxy\RecurringAppointments::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
+                                            break;
+                                        case 5:
+                                            Proxy\Cart::renderStep( $self::renderTemplate( '_progress_tracker', compact( 'step' ), false ) );
+                                            break;
+                                        case 6:
+                                            include '_6_details.php';
+                                            break;
+                                        case 7:
+                                            include '_7_payment.php';
+                                            break;
+                                        case 8:
+                                            include '_8_complete.php';
+                                            break;
                                     endswitch ?>
                                 </div>
                             <?php endforeach ?>

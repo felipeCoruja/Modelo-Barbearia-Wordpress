@@ -20,7 +20,7 @@ use Bookly\Lib;
                         <label for="bookly-new-service-type"><?php esc_html_e( 'Type', 'bookly' ) ?></label>
                         <select class="form-control bookly-js-new-service-type" id="bookly-new-service-type" name="type">
                             <?php foreach ( $service_types as $type => $title ): ?>
-                                <option data-icon="<?php echo esc_attr( $type_icons[ $type ] ) ?>" value="<?php echo $type ?>"><?php echo $title ?></option>
+                                <option data-icon="<?php echo esc_attr( $type_icons[ $type ] ) ?>" value="<?php echo esc_attr( $type ) ?>"><?php echo esc_html( $title ) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>

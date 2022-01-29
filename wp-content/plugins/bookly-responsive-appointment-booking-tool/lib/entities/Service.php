@@ -1388,6 +1388,10 @@ class Service extends Lib\Base\Entity
             $this->recurrence_frequencies = implode( ',', $this->recurrence_frequencies );
         }
 
+        if ( $this->color === null ) {
+            $this->color = sprintf( '#%06X', mt_rand( 0, 0x64FFFF ) );
+        }
+
         $return = parent::save();
         if ( $this->isLoaded() ) {
             // Register string for translate in WPML.

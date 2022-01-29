@@ -4,7 +4,10 @@ namespace Bookly\Backend\Modules\Appointments\Proxy;
 use Bookly\Lib;
 
 /**
- * Deprecated, will be deleted in Bookly 17.9
+ * Class Locations
+ * @package Bookly\Backend\Modules\Appointments\Proxy
+ *
+ * @method static void renderFilter() Render location filter on appointments list page.
  */
 abstract class Locations extends Lib\Base\Proxy
 {

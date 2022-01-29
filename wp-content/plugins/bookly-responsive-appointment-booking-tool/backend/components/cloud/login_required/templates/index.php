@@ -9,7 +9,7 @@ use Bookly\Backend\Components\Cloud;
 ?>
 <div id="bookly-tbs" class="wrap">
     <div class="form-row align-items-center mb-3">
-        <h4 class="col m-0"><?php echo $title ?></h4>
+        <h4 class="col m-0"><?php echo esc_html( $title ) ?></h4>
         <?php Support\Buttons::render( $slug ) ?>
     </div>
     <div id="bookly-login-required" class="card mb-4" style="min-height: 600px;">

@@ -3,6 +3,7 @@ use Bookly\Backend\Components\Controls\Inputs;
 use Bookly\Backend\Components\Controls\Buttons;
 use Bookly\Lib\Utils\Price;
 use Bookly\Backend\Modules\Settings\Proxy;
+use Bookly\Lib\Utils\Common;
 ?>
 <form method="post" action="<?php echo esc_url( add_query_arg( 'tab', 'payments' ) ) ?>">
     <div class="card-body">
@@ -12,7 +13,7 @@ use Bookly\Backend\Modules\Settings\Proxy;
                     <label for="bookly_pmt_currency"><?php esc_html_e( 'Currency', 'bookly' ) ?></label>
                     <select id="bookly_pmt_currency" class="form-control custom-select" name="bookly_pmt_currency">
                         <?php foreach ( Price::getCurrencies() as $code => $currency ) : ?>
-                            <option value="<?php echo $code ?>" data-symbol="<?php esc_attr_e( $currency['symbol'] ) ?>" <?php selected( get_option( 'bookly_pmt_currency' ), $code ) ?> ><?php echo $code ?> (<?php esc_html_e( $currency['symbol'] ) ?>)</option>
+                            <option value="<?php echo esc_attr( $code ) ?>" data-symbol="<?php esc_attr_e( $currency['symbol'] ) ?>" <?php selected( get_option( 'bookly_pmt_currency' ), $code ) ?> ><?php echo esc_html( $code ) ?> (<?php esc_html_e( $currency['symbol'] ) ?>)</option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -22,7 +23,7 @@ use Bookly\Backend\Modules\Settings\Proxy;
                     <label for="bookly_pmt_price_format"><?php esc_html_e( 'Price format', 'bookly' ) ?></label>
                     <select id="bookly_pmt_price_format" class="form-control custom-select" name="bookly_pmt_price_format">
                         <?php foreach ( Price::getFormats() as $format ) : ?>
-                            <option value="<?php echo $format ?>" <?php selected( get_option( 'bookly_pmt_price_format' ), $format ) ?> ></option>
+                            <option value="<?php echo esc_attr( $format ) ?>" <?php selected( get_option( 'bookly_pmt_price_format' ), $format ) ?> ></option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -32,7 +33,7 @@ use Bookly\Backend\Modules\Settings\Proxy;
         <?php Proxy\Taxes::renderPayments() ?>
         <div id="bookly-payment-systems">
             <?php foreach ( $payments as $payment ) : ?>
-                <?php echo $payment ?>
+                <?php echo Common::stripScripts( $payment ) ?>
             <?php endforeach ?>
         </div>
     </div>

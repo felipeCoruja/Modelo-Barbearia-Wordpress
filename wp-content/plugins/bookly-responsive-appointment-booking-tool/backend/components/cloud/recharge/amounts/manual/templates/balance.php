@@ -14,13 +14,13 @@ if ( $balance <= 0 ) {
 }
 ?>
 <div class="btn-group mr-2">
-    <div class="border border-right-0 rounded pl-2 d-flex align-items-center">
+    <div class="border border-right-0 rounded-left pl-2 d-flex align-items-center">
         <h6 class="small m-0"><b><?php _e( 'current<br/>balance', 'bookly' ) ?></b></h6>
     </div>
     <div class="border border-left-0 px-2 d-flex align-items-center">
-        <span class="lead <?php echo $txt_class ?>">$<?php echo number_format( $balance, 2 ) ?></span>
+        <span class="lead <?php echo esc_attr( $txt_class ) ?>">$<?php echo number_format( $balance, 2 ) ?></span>
     </div>
-    <button type="button" class="btn <?php echo $btn_class ?> text-nowrap bookly-js-recharge-dialog-activator">
+    <button type="button" class="btn <?php echo esc_attr( $btn_class ) ?> text-nowrap bookly-js-recharge-dialog-activator">
         <i class="fas fa-coins"></i><span class="d-none d-md-inline ml-2"><?php esc_html_e( 'Recharge', 'bookly' ) ?></span>
     </button>
 </div>

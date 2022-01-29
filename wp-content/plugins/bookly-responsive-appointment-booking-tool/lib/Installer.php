@@ -221,6 +221,8 @@ class Installer extends Base\Installer
          * Options.
          */
         $this->options = array(
+            // Initial setup.
+            'bookly_setup_step' => '1',
             // Appearance.
             'bookly_admin_preferred_language' => '',
             'bookly_app_color' => '#f4662f',
@@ -235,12 +237,16 @@ class Installer extends Base\Installer
             'bookly_app_show_progress_tracker' => '1',
             'bookly_app_align_buttons_left' => '0',
             'bookly_app_staff_name_with_price' => '1',
+            'bookly_app_show_single_slot' => '0',
             'bookly_app_show_email_confirm' => '0',
             'bookly_app_show_start_over' => '1',
             'bookly_app_show_service_info' => '1',
             'bookly_app_show_staff_info' => '0',
+            'bookly_app_show_terms' => '0',
+            'bookly_app_show_download_ics' => '0',
             'bookly_l10n_button_apply' => __( 'Apply', 'bookly' ),
             'bookly_l10n_button_back' => __( 'Back', 'bookly' ),
+            'bookly_l10n_button_download_ics' => __( 'Download ICS', 'bookly' ),
             'bookly_l10n_info_complete_step' => __( 'Thank you! Your booking is complete. An email with details of your booking has been sent to you.', 'bookly' ),
             'bookly_l10n_info_complete_step_limit_error' => __( 'You are trying to use the service too often. Please contact us to make a booking.', 'bookly' ),
             'bookly_l10n_info_complete_step_processing' => __( 'Your payment has been accepted for processing.', 'bookly' ),
@@ -264,6 +270,8 @@ class Installer extends Base\Installer
             'bookly_l10n_label_select_date' => __( 'I\'m available on or after', 'bookly' ),
             'bookly_l10n_label_service' => __( 'Service', 'bookly' ),
             'bookly_l10n_label_start_from' => __( 'Start from', 'bookly' ),
+            'bookly_l10n_label_terms' => __( 'I agree to the terms of service', 'bookly' ),
+            'bookly_l10n_error_terms' => __( 'You must accept our terms', 'bookly' ),
             'bookly_l10n_option_category' => __( 'Select category', 'bookly' ),
             'bookly_l10n_option_employee' => __( 'Any', 'bookly' ),
             'bookly_l10n_option_service' => __( 'Select service', 'bookly' ),
@@ -301,12 +309,16 @@ class Installer extends Base\Installer
             'bookly_cal_one_participant' => '{service_name}' . "\n" . '{client_name}' . "\n" . '{client_phone}' . "\n" . '{client_email}' . "\n" . '{total_price} {payment_type} {payment_status}' . "\n" . __( 'Status', 'bookly' ) . ': {status}' . "\n" . __( 'Signed up', 'bookly' ) . ': {signed_up}' . "\n" . __( 'Capacity', 'bookly' ) . ': {service_capacity}',
             'bookly_cal_many_participants' => '{service_name}' . "\n" . __( 'Signed up', 'bookly' ) . ': {signed_up}' . "\n" . __( 'Capacity', 'bookly' ) . ': {service_capacity}',
             'bookly_cal_coloring_mode' => 'service',
+            'bookly_cal_month_view_style' => 'classic',
             // Company.
             'bookly_co_logo_attachment_id' => '',
             'bookly_co_name' => '',
             'bookly_co_address' => '',
             'bookly_co_phone' => '',
             'bookly_co_website' => '',
+            'bookly_co_email' => '',
+            'bookly_co_industry' => '',
+            'bookly_co_size' => '',
             // Customers.
             'bookly_cst_allow_duplicates' => '0',
             'bookly_cst_create_account' => '0',
@@ -337,6 +349,7 @@ class Installer extends Base\Installer
             'bookly_gen_show_powered_by' => '0',
             'bookly_gen_prevent_caching' => '1',
             'bookly_gen_prevent_session_locking' => '0',
+            'bookly_gen_badge_consider_news' => '1',
             // URL.
             'bookly_url_approve_page_url' => home_url(),
             'bookly_url_approve_denied_page_url' => home_url(),
@@ -348,15 +361,19 @@ class Installer extends Base\Installer
             'bookly_sms_administrator_phone' => '',
             'bookly_sms_undelivered_count' => '0',
             // Cloud.
-            'bookly_cloud_notify_low_balance' => '1',
-            'bookly_cloud_token' => '',
-            'bookly_cloud_products' => '',
-            'bookly_cloud_promotions' => '',
             'bookly_cloud_account_products' => '',
-            'bookly_cloud_stripe_enabled' => '0',
-            'bookly_cloud_stripe_timeout' => '0',
-            'bookly_cloud_stripe_increase' => '0',
+            'bookly_cloud_auto_recharge_end_at' => '',
+            'bookly_cloud_auto_recharge_end_at_ts' => '0',
+            'bookly_cloud_auto_recharge_gateway' => '',
+            'bookly_cloud_badge_consider_sms' => '1',
+            'bookly_cloud_notify_low_balance' => '1',
+            'bookly_cloud_promotions' => '',
+            'bookly_cloud_renew_auto_recharge_notice_hide_until' => '-1',
             'bookly_cloud_stripe_addition' => '0',
+            'bookly_cloud_stripe_enabled' => '0',
+            'bookly_cloud_stripe_increase' => '0',
+            'bookly_cloud_stripe_timeout' => '0',
+            'bookly_cloud_token' => '',
             'bookly_cloud_zapier_api_key' => '',
             // Business hours.
             'bookly_bh_monday_start' => '08:00:00',
@@ -434,6 +451,7 @@ class Installer extends Base\Installer
             'bookly_sms_prices_table_settings',
             'bookly_sms_sender_table_settings',
             'bookly_staff_table_settings',
+            'bookly_notice_renew_auto_recharge_hide_until',
             // rate
             'bookly_nps_rate',
             'bookly_notice_rate_on_wp_hide_until',
@@ -459,25 +477,30 @@ class Installer extends Base\Installer
 
         $wpdb->query(
             'CREATE TABLE IF NOT EXISTS `' . Entities\Staff::getTableName() . '` (
-                `id`                 INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                `category_id`        INT UNSIGNED DEFAULT NULL,
-                `wp_user_id`         BIGINT(20) UNSIGNED DEFAULT NULL,
-                `attachment_id`      INT UNSIGNED DEFAULT NULL,
-                `full_name`          VARCHAR(255) DEFAULT NULL,
-                `email`              VARCHAR(255) DEFAULT NULL,
-                `phone`              VARCHAR(255) DEFAULT NULL,
-                `time_zone`          VARCHAR(255) DEFAULT NULL,
-                `info`               TEXT DEFAULT NULL,
-                `working_time_limit` INT UNSIGNED DEFAULT NULL,
-                `visibility`         ENUM("public","private","archive") NOT NULL DEFAULT "public",
-                `position`           INT NOT NULL DEFAULT 9999,
-                `google_data`        TEXT DEFAULT NULL,
-                `outlook_data`       TEXT DEFAULT NULL,
-                `zoom_authentication` ENUM("default", "jwt", "oauth") NOT NULL DEFAULT "default",
-                `zoom_jwt_api_key`   VARCHAR(255) DEFAULT NULL,
-                `zoom_jwt_api_secret` VARCHAR(255) DEFAULT NULL,
-                `zoom_oauth_token`   TEXT DEFAULT NULL,
-                `color`              VARCHAR(255) NOT NULL DEFAULT "#dddddd"
+                `id`                    INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `category_id`           INT UNSIGNED DEFAULT NULL,
+                `wp_user_id`            BIGINT(20) UNSIGNED DEFAULT NULL,
+                `attachment_id`         INT UNSIGNED DEFAULT NULL,
+                `full_name`             VARCHAR(255) DEFAULT NULL,
+                `email`                 VARCHAR(255) DEFAULT NULL,
+                `phone`                 VARCHAR(255) DEFAULT NULL,
+                `time_zone`             VARCHAR(255) DEFAULT NULL,
+                `info`                  TEXT DEFAULT NULL,
+                `working_time_limit`    INT UNSIGNED DEFAULT NULL,
+                `visibility`            ENUM("public","private","archive") NOT NULL DEFAULT "public",
+                `position`              INT NOT NULL DEFAULT 9999,
+                `google_data`           TEXT DEFAULT NULL,
+                `outlook_data`          TEXT DEFAULT NULL,
+                `zoom_authentication`   ENUM("default", "jwt", "oauth") NOT NULL DEFAULT "default",
+                `zoom_jwt_api_key`      VARCHAR(255) DEFAULT NULL,
+                `zoom_jwt_api_secret`   VARCHAR(255) DEFAULT NULL,
+                `zoom_oauth_token`      TEXT DEFAULT NULL,
+                `icalendar`             TINYINT(1) NOT NULL DEFAULT 0,
+                `icalendar_token`       VARCHAR(255) DEFAULT NULL,
+                `icalendar_days_before` INT NOT NULL DEFAULT 365,
+                `icalendar_days_after`  INT NOT NULL DEFAULT 365,
+                `color`                 VARCHAR(255) NOT NULL DEFAULT "#dddddd",
+                `gateways`              VARCHAR(255) DEFAULT NULL
             ) ENGINE = INNODB
             ' . $charset_collate
         );
@@ -487,8 +510,8 @@ class Installer extends Base\Installer
                 `id`       INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `name`     VARCHAR(255) NOT NULL,
                 `position` INT NOT NULL DEFAULT 9999
-             ) ENGINE = INNODB
-             ' . $charset_collate
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -525,7 +548,7 @@ class Installer extends Base\Installer
                 `recurrence_frequencies`       SET("daily","weekly","biweekly","monthly") NOT NULL DEFAULT "daily,weekly,biweekly,monthly",
                 `time_requirements`            ENUM("required","optional","off") NOT NULL DEFAULT "required",
                 `collaborative_equal_duration` TINYINT(1) NOT NULL DEFAULT 0,
-                `online_meetings`              ENUM("off","zoom") NOT NULL DEFAULT "off",
+                `online_meetings`              ENUM("off","zoom","google_meet","jitsi") NOT NULL DEFAULT "off",
                 `final_step_url`               VARCHAR(512) NOT NULL DEFAULT "",
                 `wc_product_id`                INT UNSIGNED NOT NULL DEFAULT 0,
                 `wc_cart_info_name`            VARCHAR(255) DEFAULT NULL,
@@ -534,13 +557,13 @@ class Installer extends Base\Installer
                 `min_time_prior_cancel`        INT DEFAULT NULL,
                 `visibility`                   ENUM("public","private","group") NOT NULL DEFAULT "public",
                 `position`                     INT NOT NULL DEFAULT 9999,
-                CONSTRAINT
-                    FOREIGN KEY (category_id)
-                    REFERENCES ' . Entities\Category::getTableName() . '(id)
-                    ON DELETE SET NULL
-                    ON UPDATE CASCADE
-             ) ENGINE = INNODB
-             ' . $charset_collate
+            CONSTRAINT
+                FOREIGN KEY (category_id)
+                REFERENCES ' . Entities\Category::getTableName() . '(id)
+                ON DELETE SET NULL
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -551,16 +574,16 @@ class Installer extends Base\Installer
                 `sub_service_id`    INT UNSIGNED DEFAULT NULL,
                 `duration`          INT DEFAULT NULL,
                 `position`          INT NOT NULL DEFAULT 9999,
-                CONSTRAINT
-                    FOREIGN KEY (service_id)
-                    REFERENCES ' . Entities\Service::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (sub_service_id)
-                    REFERENCES ' . Entities\Service::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
+            CONSTRAINT
+                FOREIGN KEY (service_id)
+                REFERENCES ' . Entities\Service::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (sub_service_id)
+                REFERENCES ' . Entities\Service::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
             ) ENGINE = INNODB
             ' . $charset_collate
         );
@@ -573,14 +596,14 @@ class Installer extends Base\Installer
                 `day_index`   INT UNSIGNED NOT NULL,
                 `start_time`  TIME DEFAULT NULL,
                 `end_time`    TIME DEFAULT NULL,
-                UNIQUE KEY unique_ids_idx (staff_id, day_index, location_id),
-                CONSTRAINT
-                    FOREIGN KEY (staff_id)
-                    REFERENCES ' . Entities\Staff::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-             ) ENGINE = INNODB
-             ' . $charset_collate
+            UNIQUE KEY unique_ids_idx (staff_id, day_index, location_id),
+            CONSTRAINT
+                FOREIGN KEY (staff_id)
+                REFERENCES ' . Entities\Staff::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -593,17 +616,17 @@ class Installer extends Base\Installer
                 `deposit`      VARCHAR(100) NOT NULL DEFAULT "100%",
                 `capacity_min` INT NOT NULL DEFAULT 1,
                 `capacity_max` INT NOT NULL DEFAULT 1,
-                UNIQUE KEY unique_ids_idx (staff_id, service_id, location_id),
-                CONSTRAINT
-                    FOREIGN KEY (staff_id)
-                    REFERENCES ' . Entities\Staff::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (service_id)
-                    REFERENCES ' . Entities\Service::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
+            UNIQUE KEY unique_ids_idx (staff_id, service_id, location_id),
+            CONSTRAINT
+                FOREIGN KEY (staff_id)
+                REFERENCES ' . Entities\Staff::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (service_id)
+                REFERENCES ' . Entities\Service::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
             ) ENGINE = INNODB
             ' . $charset_collate
         );
@@ -614,13 +637,13 @@ class Installer extends Base\Installer
                 `staff_schedule_item_id` INT UNSIGNED NOT NULL,
                 `start_time`             TIME DEFAULT NULL,
                 `end_time`               TIME DEFAULT NULL,
-                CONSTRAINT
-                    FOREIGN KEY (staff_schedule_item_id)
-                    REFERENCES ' . Entities\StaffScheduleItem::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-             ) ENGINE = INNODB
-             ' . $charset_collate
+            CONSTRAINT
+                FOREIGN KEY (staff_schedule_item_id)
+                REFERENCES ' . Entities\StaffScheduleItem::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -698,40 +721,40 @@ class Installer extends Base\Installer
                 `outlook_event_id`         VARCHAR(255) DEFAULT NULL,
                 `outlook_event_change_key` VARCHAR(255) DEFAULT NULL,
                 `outlook_event_series_id`  VARCHAR(255) DEFAULT NULL,
-                `online_meeting_provider`  ENUM("zoom") DEFAULT NULL,
+                `online_meeting_provider`  ENUM("zoom","google_meet","jitsi") DEFAULT NULL,
                 `online_meeting_id`        VARCHAR(255) DEFAULT NULL,
                 `online_meeting_data`      TEXT DEFAULT NULL,
                 `created_from`             ENUM("bookly","google","outlook") NOT NULL DEFAULT "bookly",
                 `created_at`               DATETIME NOT NULL,
                 `updated_at`               DATETIME NOT NULL,
-                CONSTRAINT
-                    FOREIGN KEY (staff_id)
-                    REFERENCES ' . Entities\Staff::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (service_id)
-                    REFERENCES ' . Entities\Service::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
+            CONSTRAINT
+                FOREIGN KEY (staff_id)
+                REFERENCES ' . Entities\Staff::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (service_id)
+                REFERENCES ' . Entities\Service::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
             ) ENGINE = INNODB
             ' . $charset_collate
         );
 
         $wpdb->query(
             'CREATE TABLE IF NOT EXISTS `' . Entities\Holiday::getTableName() . '` (
-                  `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                  `staff_id`     INT UNSIGNED NULL DEFAULT NULL,
-                  `parent_id`    INT UNSIGNED NULL DEFAULT NULL,
-                  `date`         DATE NOT NULL,
-                  `repeat_event` TINYINT(1) NOT NULL DEFAULT 0,
-                  CONSTRAINT
-                      FOREIGN KEY (staff_id)
-                      REFERENCES ' . Entities\Staff::getTableName() . '(id)
-                      ON DELETE CASCADE
-                      ON UPDATE CASCADE
-              ) ENGINE = INNODB
-              ' . $charset_collate
+                `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `staff_id`     INT UNSIGNED NULL DEFAULT NULL,
+                `parent_id`    INT UNSIGNED NULL DEFAULT NULL,
+                `date`         DATE NOT NULL,
+                `repeat_event` TINYINT(1) NOT NULL DEFAULT 0,
+            CONSTRAINT
+                FOREIGN KEY (staff_id)
+                REFERENCES ' . Entities\Staff::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -754,6 +777,14 @@ class Installer extends Base\Installer
         );
 
         $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . Entities\Order::getTableName() . '` (
+                `id`              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `token`           VARCHAR(255) DEFAULT NULL
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
             'CREATE TABLE IF NOT EXISTS `' . Entities\CustomerAppointment::getTableName() . '` (
                 `id`                       INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `series_id`                INT UNSIGNED DEFAULT NULL,
@@ -761,6 +792,7 @@ class Installer extends Base\Installer
                 `customer_id`              INT UNSIGNED NOT NULL,
                 `appointment_id`           INT UNSIGNED NOT NULL,
                 `payment_id`               INT UNSIGNED DEFAULT NULL,
+                `order_id`                 INT UNSIGNED DEFAULT NULL,
                 `number_of_persons`        INT UNSIGNED NOT NULL DEFAULT 1,
                 `units`                    INT UNSIGNED NOT NULL DEFAULT 1,
                 `notes`                    TEXT DEFAULT NULL,
@@ -783,26 +815,31 @@ class Installer extends Base\Installer
                 `created_from`             ENUM("frontend","backend") NOT NULL DEFAULT "frontend",
                 `created_at`               DATETIME NOT NULL,
                 `updated_at`               DATETIME NOT NULL,
-                CONSTRAINT
-                    FOREIGN KEY (customer_id)
-                    REFERENCES  ' . Entities\Customer::getTableName() . '(id)
-                    ON DELETE   CASCADE
-                    ON UPDATE   CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (appointment_id)
-                    REFERENCES  ' . Entities\Appointment::getTableName() . '(id)
-                    ON DELETE   CASCADE
-                    ON UPDATE   CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (series_id)
-                    REFERENCES  ' . Entities\Series::getTableName() . '(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE,
-                CONSTRAINT
-                    FOREIGN KEY (payment_id)
-                    REFERENCES ' . Entities\Payment::getTableName() . '(id)
-                    ON DELETE   SET NULL
-                    ON UPDATE   CASCADE
+            CONSTRAINT
+                FOREIGN KEY (customer_id)
+                REFERENCES  ' . Entities\Customer::getTableName() . '(id)
+                ON DELETE   CASCADE
+                ON UPDATE   CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (appointment_id)
+                REFERENCES  ' . Entities\Appointment::getTableName() . '(id)
+                ON DELETE   CASCADE
+                ON UPDATE   CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (series_id)
+                REFERENCES  ' . Entities\Series::getTableName() . '(id)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (payment_id)
+                REFERENCES ' . Entities\Payment::getTableName() . '(id)
+                ON DELETE   SET NULL
+                ON UPDATE   CASCADE,
+            CONSTRAINT
+                FOREIGN KEY (order_id)
+                REFERENCES ' . Entities\Order::getTableName() . '(id)
+                ON DELETE   SET NULL
+                ON UPDATE   CASCADE
             ) ENGINE = INNODB
             ' . $charset_collate
         );
@@ -813,14 +850,14 @@ class Installer extends Base\Installer
                 `ref_id`          INT UNSIGNED NOT NULL,
                 `notification_id` INT UNSIGNED NOT NULL,
                 `created_at`      DATETIME NOT NULL,
-                INDEX `ref_id_idx` (`ref_id`),
-                CONSTRAINT
-                    FOREIGN KEY (notification_id) 
-                    REFERENCES  ' . Entities\Notification::getTableName() . ' (`id`) 
-                    ON DELETE   CASCADE 
-                    ON UPDATE   CASCADE
-              ) ENGINE = INNODB
-              ' . $charset_collate
+            INDEX `ref_id_idx` (`ref_id`),
+            CONSTRAINT
+                FOREIGN KEY (notification_id) 
+                REFERENCES  ' . Entities\Notification::getTableName() . ' (`id`) 
+                ON DELETE   CASCADE 
+                ON UPDATE   CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -829,8 +866,8 @@ class Installer extends Base\Installer
                 `name`     VARCHAR(255) NOT NULL,
                 `value`    TEXT DEFAULT NULL,
                 `created_at` DATETIME NOT NULL
-              ) ENGINE = INNODB
-              ' . $charset_collate
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -846,8 +883,8 @@ class Installer extends Base\Installer
                 `seen`        TINYINT(1) NOT NULL DEFAULT 0,
                 `updated_at`  DATETIME NOT NULL,
                 `created_at`  DATETIME NOT NULL
-              ) ENGINE = INNODB
-              ' . $charset_collate
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -870,8 +907,8 @@ class Installer extends Base\Installer
                 `published`   DATETIME NOT NULL,
                 `seen`        TINYINT(1) NOT NULL DEFAULT 0,
                 `created_at`  DATETIME NOT NULL
-              ) ENGINE = INNODB
-              ' . $charset_collate
+            ) ENGINE = INNODB
+            ' . $charset_collate
         );
 
         $wpdb->query(
@@ -885,6 +922,59 @@ class Installer extends Base\Installer
                 `ref`         VARCHAR(255) DEFAULT NULL,
                 `comment`     VARCHAR(255) DEFAULT NULL,
                 `created_at`  DATETIME NOT NULL
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . Entities\MailingList::getTableName() . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(255) DEFAULT NULL
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . Entities\MailingListRecipient::getTableName() . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `mailing_list_id` INT UNSIGNED NOT NULL,
+                `name` VARCHAR(255) DEFAULT NULL,
+                `phone` VARCHAR(255) DEFAULT NULL,
+                `created_at` DATETIME NOT NULL,
+            CONSTRAINT
+                FOREIGN KEY (mailing_list_id)
+                REFERENCES ' . Entities\MailingList::getTableName() . ' (`id`)
+                ON DELETE CASCADE
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . Entities\MailingCampaign::getTableName() . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `mailing_list_id` INT UNSIGNED NULL,
+                `name` VARCHAR(255) DEFAULT NULL,
+                `text` TEXT DEFAULT NULL,
+                `state`  ENUM("pending","completed") NOT NULL DEFAULT "pending",
+                `send_at` DATETIME NOT NULL,
+                `created_at` DATETIME NOT NULL,
+            CONSTRAINT
+                FOREIGN KEY (mailing_list_id)
+                REFERENCES ' . Entities\MailingList::getTableName() . ' (`id`)
+                ON DELETE SET NULL
+                ON UPDATE CASCADE
+            ) ENGINE = INNODB
+            ' . $charset_collate
+        );
+
+        $wpdb->query(
+            'CREATE TABLE IF NOT EXISTS `' . Entities\MailingQueue::getTableName() . '` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `phone` VARCHAR(255) NOT NULL,
+                `text` TEXT DEFAULT NULL,
+                `sent` TINYINT(1) DEFAULT 0,
+                `created_at` DATETIME NOT NULL
             ) ENGINE = INNODB
             ' . $charset_collate
         );

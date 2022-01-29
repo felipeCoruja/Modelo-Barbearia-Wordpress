@@ -1,6 +1,6 @@
 #bookly-tbs .bookly-editable {
     cursor: pointer;
-    border-bottom: dashed 1px #0088cc;
+    text-decoration: underline dashed #0088cc 1px;
 }
 
 #bookly-tbs .bookly-editable-popover {

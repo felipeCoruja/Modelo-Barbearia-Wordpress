@@ -27,6 +27,8 @@ class Notification extends Lib\Base\Entity
     const TYPE_STAFF_WAITING_LIST                            = 'staff_waiting_list';
     const TYPE_VERIFY_EMAIL                                  = 'verify_email';
     const TYPE_VERIFY_PHONE                                  = 'verify_phone';
+    const TYPE_FREE_PLACE_WAITING_LIST                       = 'free_place_waiting_list';
+    const TYPE_MAILING                                       = 'mailing';
 
     /** @var array Human readable notification titles */
     public static $titles;
@@ -85,6 +87,10 @@ class Notification extends Lib\Base\Entity
         'attach_invoice' => array( 'format' => '%d' ),
         'settings'       => array( 'format' => '%s' ),
     );
+
+    /**************************************************************************
+     * Entity Fields Getters & Setters                                        *
+     **************************************************************************/
 
     /**
      * Get type ID.
@@ -200,7 +206,7 @@ class Notification extends Lib\Base\Entity
                 self::TYPE_STAFF_DAY_AGENDA                    => __( 'Staff full day agenda', 'bookly' ),
                 self::TYPE_VERIFY_EMAIL                        => __( 'Verify customer\'s email', 'bookly' ),
                 self::TYPE_VERIFY_PHONE                        => __( 'Verify customer\'s phone', 'bookly' ),
-
+                self::TYPE_MAILING                             => __( 'Mailing message', 'bookly' ),
                 /** @see \Bookly\Backend\Modules\CloudSms\Ajax::sendTestSms */
                 'test_message'                                 => __( 'Test message', 'bookly' ),
             );
@@ -232,6 +238,8 @@ class Notification extends Lib\Base\Entity
                 self::TYPE_NEW_BOOKING_RECURRING               => 41,
                 self::TYPE_CUSTOMER_APPOINTMENT_STATUS_CHANGED_RECURRING => 42,
                 self::TYPE_STAFF_WAITING_LIST                  => 53,
+                self::TYPE_FREE_PLACE_WAITING_LIST             => 54,
+                self::TYPE_MAILING                             => 60,
                 self::TYPE_NEW_PACKAGE                         => 81,
                 self::TYPE_PACKAGE_DELETED                     => 83,
             );
@@ -255,6 +263,7 @@ class Notification extends Lib\Base\Entity
                 self::TYPE_CUSTOMER_NEW_WP_USER                          => 'fas fa-user-plus',
                 self::TYPE_STAFF_NEW_WP_USER                             => 'fas fa-user-plus',
                 self::TYPE_STAFF_WAITING_LIST                            => 'fas fa-list-ol',
+                self::TYPE_FREE_PLACE_WAITING_LIST                       => 'fas fa-street-view',
                 self::TYPE_APPOINTMENT_REMINDER                          => 'far fa-bell',
                 self::TYPE_LAST_CUSTOMER_APPOINTMENT                     => 'fas fa-award',
                 self::TYPE_CUSTOMER_BIRTHDAY                             => 'fas fa-gift',

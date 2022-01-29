@@ -29,7 +29,6 @@ class Page extends Lib\Base\Component
         $datatables = Lib\Utils\Tables::getSettings( 'customers' );
 
         wp_localize_script( 'bookly-customers.js', 'BooklyL10n', array(
-            'csrfToken'       => Lib\Utils\Common::getCsrfToken(),
             'infoFields'      => (array) Lib\Proxy\CustomerInformation::getFieldsWhichMayHaveData(),
             'edit'            => __( 'Edit', 'bookly' ),
             'are_you_sure'    => __( 'Are you sure?', 'bookly' ),

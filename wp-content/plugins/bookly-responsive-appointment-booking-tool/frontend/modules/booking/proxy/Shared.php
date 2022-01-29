@@ -5,6 +5,7 @@ use Bookly\Lib;
 
 /**
  * Class Shared
+ *
  * @package Bookly\Frontend\Modules\Booking\Proxy
  *
  * @method static array  booklyFormOptions( array $options ) Modify Bookly form options.
@@ -13,7 +14,8 @@ use Bookly\Lib;
  * @method static array  prepareCartItemInfoText( array $data, Lib\CartItem $cart_item ) Prepare array for replacing in Cart items.
  * @method static array  prepareChainItemInfoText( array $data, Lib\ChainItem $chain_item ) Prepare array for replacing in Chain items.
  * @method static array  prepareInfoTextCodes( array $codes, array $data ) Prepare array for replacing on booking steps.
- * @method static array  preparePaymentOptions( array $options, $form_id, bool $show_price, Lib\CartInfo $cart_info, $payment_status ) Prepare payment options for Payment step.
+ * @method static array  preparePaymentOptions( array $options, $form_id, bool $show_price, Lib\CartInfo $cart_info, Lib\UserBookingData $userData ) Prepare payment options for Payment step.
+ * @method static array  prepareSlotsData( array $slots_data ) Prepare slots data for Time step.
  * @method static void   renderCartItemInfo( Lib\UserBookingData $userData, $cart_key, $positions, $desktop ) Render extra info for cart item at Cart step.
  * @method static string renderCustomFieldsOnDetailsStep( Lib\UserBookingData $userData ) Get Custom Fields HTML for details step.
  * @method static void   renderPaymentForms( $form_id, $page_url ) Render payment form for each gateway at Payment step.

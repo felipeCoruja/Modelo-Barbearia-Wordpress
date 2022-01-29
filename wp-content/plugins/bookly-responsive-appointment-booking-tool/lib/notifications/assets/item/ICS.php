@@ -28,12 +28,14 @@ class ICS
             . "DTEND:%s\n"
             . "SUMMARY:%s\n"
             . "DESCRIPTION:%s\n"
+            . "LOCATION:%s\n"
             . "END:VEVENT\n"
             . "END:VCALENDAR",
             $this->_formatDateTime( $codes->appointment_start ),
             $this->_formatDateTime( $codes->appointment_end ),
             $this->_escape( $codes->service_name ),
-            $this->_escape( sprintf( "%s\n%s", $codes->service_name, $codes->staff_name ) )
+            $this->_escape( sprintf( "%s\n%s", $codes->service_name, $codes->staff_name ) ),
+            $this->_escape( sprintf( "%s", $codes->location_name ) )
         );
     }
 

@@ -35,7 +35,7 @@ use Bookly\Backend\Modules\Customers\Proxy;
                         <tr>
                             <?php foreach ( $datatables['customers']['settings']['columns'] as $column => $show ) : ?>
                                 <?php if ( $show ) : ?>
-                                    <th><?php echo $datatables['customers']['titles'][ $column ] ?></th>
+                                    <th><?php echo esc_html( $datatables['customers']['titles'][ $column ] ) ?></th>
                                 <?php endif ?>
                             <?php endforeach ?>
                             <th></th>

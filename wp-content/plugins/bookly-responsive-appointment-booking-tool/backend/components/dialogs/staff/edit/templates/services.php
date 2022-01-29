@@ -33,20 +33,20 @@ use Bookly\Lib\Utils\Common;
                     <ul class="bookly-js-category-services list-group pt-2 list-unstyled">
                         <?php foreach ( $form->getUncategorizedServices() as $service ) : ?>
                             <?php $sub_service = current( $service->getSubServices() ) ?>
-                            <li class="p-2 mx-2" data-service-id="<?php echo $service->getId() ?>" data-service-type="<?php echo $service->getType() ?>"
-                                data-sub-service="<?php echo empty( $sub_service ) ? null : $sub_service->getId() ?>">
+                            <li class="p-2 mx-2" data-service-id="<?php echo esc_attr( $service->getId() ) ?>" data-service-type="<?php echo esc_attr( $service->getType() ) ?>"
+                                data-sub-service="<?php echo esc_attr( empty( $sub_service ) ? null : $sub_service->getId() ) ?>">
                                 <div class="row">
                                     <div class="col-lg-5">
                                         <div class="custom-control custom-checkbox mt-2">
                                             <input
                                                     class="custom-control-input bookly-js-service-checkbox"
-                                                    id="bookly-check-service-<?php echo $service->getId() ?>"
+                                                    id="bookly-check-service-<?php echo esc_attr( $service->getId() ) ?>"
                                                     type="checkbox"
                                                 <?php checked( array_key_exists( $service->getId(), $services_data ) ) ?>
-                                                    value="<?php echo $service->getId() ?>"
-                                                    name="service[<?php echo $service->getId() ?>]"
+                                                    value="<?php echo esc_attr( $service->getId() ) ?>"
+                                                    name="service[<?php echo esc_attr( $service->getId() ) ?>]"
                                             />
-                                            <label class="custom-control-label w-100 bookly-toggle-label" for="bookly-check-service-<?php echo $service->getId() ?>">
+                                            <label class="custom-control-label w-100 bookly-toggle-label" for="bookly-check-service-<?php echo esc_attr( $service->getId() ) ?>">
                                                 <?php echo esc_html( $service->getTitle() ) ?>
                                                 <?php Proxy\Ratings::renderStaffServiceRating( $staff_id, $service->getId(), 'right' ) ?>
                                             </label>
@@ -57,8 +57,8 @@ use Bookly\Lib\Utils\Common;
                                             <div class="col-3">
                                                 <div class="d-lg-none"><?php esc_html_e( 'Price', 'bookly' ) ?></div>
                                                 <input class="form-control text-right" type="text" <?php disabled( ! array_key_exists( $service->getId(), $services_data ) ) ?>
-                                                       name="price[<?php echo $service->getId() ?>]"
-                                                       value="<?php echo array_key_exists( $service->getId(), $services_data ) ? $services_data[ $service->getId() ]['price'] : $service->getPrice() ?>"
+                                                       name="price[<?php echo esc_attr( $service->getId() ) ?>]"
+                                                       value="<?php echo esc_attr( array_key_exists( $service->getId(), $services_data ) ? $services_data[ $service->getId() ]['price'] : $service->getPrice() ) ?>"
                                                 />
                                             </div>
 
@@ -77,8 +77,8 @@ use Bookly\Lib\Utils\Common;
                         <div class="row">
                             <div class="col-lg-5">
                                 <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input bookly-js-category-checkbox" id="bookly-category-<?php echo $category->getId() ?>" type="checkbox" data-category-id="<?php echo $category->getId() ?>"/>
-                                    <label class="custom-control-label" for="bookly-category-<?php echo $category->getId() ?>"><?php echo esc_html( $category->getName() ) ?></label>
+                                    <input class="custom-control-input bookly-js-category-checkbox" id="bookly-category-<?php echo esc_attr( $category->getId() ) ?>" type="checkbox" data-category-id="<?php echo esc_attr( $category->getId() ) ?>"/>
+                                    <label class="custom-control-label" for="bookly-category-<?php echo esc_attr( $category->getId() ) ?>"><?php echo esc_html( $category->getName() ) ?></label>
                                 </div>
                             </div>
                             <div class="col-lg-7">
@@ -94,21 +94,21 @@ use Bookly\Lib\Utils\Common;
                     <ul class="bookly-js-category-services list-group pt-2 list-unstyled">
                         <?php foreach ( $category->getServices() as $service ) : ?>
                             <?php $sub_service = current( $service->getSubServices() ) ?>
-                            <li class="p-2 mx-2" data-service-id="<?php echo $service->getId() ?>" data-service-type="<?php echo $service->getType() ?>"
-                                data-sub-service="<?php echo empty( $sub_service ) ? null : $sub_service->getId() ?>">
+                            <li class="p-2 mx-2" data-service-id="<?php echo esc_attr( $service->getId() ) ?>" data-service-type="<?php echo esc_attr( $service->getType() ) ?>"
+                                data-sub-service="<?php echo esc_attr( empty( $sub_service ) ? null : $sub_service->getId() ) ?>">
                                 <div class="row">
                                     <div class="col-lg-5">
                                         <div class="custom-control custom-checkbox mt-2">
                                             <input
                                                     class="custom-control-input bookly-js-service-checkbox"
-                                                    data-category-id="<?php echo $category->getId() ?>"
-                                                    id="bookly-check-service-<?php echo $service->getId() ?>"
+                                                    data-category-id="<?php echo esc_attr( $category->getId() ) ?>"
+                                                    id="bookly-check-service-<?php echo esc_attr( $service->getId() ) ?>"
                                                     type="checkbox"
                                                 <?php checked( array_key_exists( $service->getId(), $services_data ) ) ?>
-                                                    value="<?php echo $service->getId() ?>"
-                                                    name="service[<?php echo $service->getId() ?>]"
+                                                    value="<?php echo esc_attr( $service->getId() ) ?>"
+                                                    name="service[<?php echo esc_attr( $service->getId() ) ?>]"
                                             />
-                                            <label class="custom-control-label w-100 bookly-toggle-label" for="bookly-check-service-<?php echo $service->getId() ?>">
+                                            <label class="custom-control-label w-100 bookly-toggle-label" for="bookly-check-service-<?php echo esc_attr( $service->getId() ) ?>">
                                                 <?php echo esc_html( $service->getTitle() ) ?>
                                                 <?php Proxy\Ratings::renderStaffServiceRating( $staff_id, $service->getId(), 'right' ) ?>
                                             </label>
@@ -119,8 +119,8 @@ use Bookly\Lib\Utils\Common;
                                             <div class="col-3">
                                                 <div class="d-lg-none"><?php esc_html_e( 'Price', 'bookly' ) ?></div>
                                                 <input class="form-control text-right" type="text" <?php disabled( ! array_key_exists( $service->getId(), $services_data ) ) ?>
-                                                       name="price[<?php echo $service->getId() ?>]"
-                                                       value="<?php echo array_key_exists( $service->getId(), $services_data ) ? $services_data[ $service->getId() ]['price'] : $service->getPrice() ?>"
+                                                       name="price[<?php echo esc_attr( $service->getId() ) ?>]"
+                                                       value="<?php echo esc_attr( array_key_exists( $service->getId(), $services_data ) ? $services_data[ $service->getId() ]['price'] : $service->getPrice() ) ?>"
                                                 />
                                             </div>
 
@@ -134,7 +134,7 @@ use Bookly\Lib\Utils\Common;
                     </ul>
                 <?php endforeach ?>
 
-                <input type="hidden" name="staff_id" value="<?php echo $staff_id ?>">
+                <input type="hidden" name="staff_id" value="<?php echo esc_attr( $staff_id ) ?>">
 
                 <div class="bookly-js-modal-footer">
                     <span class="bookly-js-services-error text-danger"></span>

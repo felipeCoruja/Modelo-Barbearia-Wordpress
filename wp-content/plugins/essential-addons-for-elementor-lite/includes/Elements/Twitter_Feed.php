@@ -321,7 +321,7 @@ class Twitter_Feed extends Widget_Base
                         ],
                     ],
                     'default' => '1',
-                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.net/upgrade/ea-pro" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
+                    'description' => '<span class="pro-feature"> Get the  <a href="https://wpdeveloper.com/upgrade/ea-pro" target="_blank">Pro version</a> for more stunning elements and customization options.</span>',
                 ]
             );
 
@@ -363,15 +363,15 @@ class Twitter_Feed extends Widget_Base
                 'options' => [
                     'flex-start' => [
                         'title' => __('Top', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-left',
+                        'icon' => 'eicon-text-align-left',
                     ],
                     'center' => [
                         'title' => __('Middle', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-center',
+                        'icon' => 'eicon-text-align-center',
                     ],
                     'flex-end' => [
                         'title' => __('Bottom', 'essential-addons-for-elementor-lite'),
-                        'icon' => 'fa fa-align-right',
+                        'icon' => 'eicon-text-align-right',
                     ],
                 ],
                 'default' => 'center',

@@ -73,12 +73,13 @@ class Selects
     /**
      * Render drop-down select.
      *
-     * @param string $option_name
-     * @param string $label
-     * @param array  $options
-     * @param string $help
+     * @param $option_name
+     * @param null $label
+     * @param null $help
+     * @param array $options
+     * @param array $attributes
      */
-    public static function renderSingle( $option_name, $label = null, $help = null, array $options = array() )
+    public static function renderSingle( $option_name, $label = null, $help = null, array $options = array(), $attributes = array() )
     {
         if ( empty ( $options ) ) {
             $options = array(
@@ -101,11 +102,81 @@ class Selects
                 )
             );
         }
+        $attributes['id'] = $option_name;
+        $attributes['class'] = 'form-control custom-select';
+        $attributes['name'] = $option_name;
+
+        $attributes_str = '';
+        foreach ( $attributes as $attr => $value ) {
+            if ( $value !== null ) {
+                $attributes_str .= sprintf( ' %s="%s"', $attr, esc_attr( $value ) );
+            }
+        }
 
         $control = strtr(
-            '<select id="{name}" class="form-control custom-select" name="{name}">{options}</select>',
+            '<select {attributes}>{options}</select>',
             array(
-                '{name}'    => $option_name,
+                '{attributes}' => $attributes_str,
+                '{options}' => $options_str,
+            )
+        );
+
+        echo Inputs::buildControl( $option_name, $label, $help, $control );
+    }
+
+    /**
+     * Render drop-down select.
+     *
+     * @param $option_name
+     * @param null $label
+     * @param null $help
+     * @param array $options
+     * @param array $attributes
+     */
+    public static function renderSingleWithCategories( $option_name, $label = null, $help = null, array $options = array(), $attributes = array() )
+    {
+        $options_str = '';
+        foreach ( $options as $option => $value ) {
+            if ( is_array( $value ) ) {
+                $options_str .= sprintf( '<optgroup label="%s">', esc_attr( $option ) );
+                foreach ( $value as $option_value => $option_label ) {
+                    $options_str .= strtr(
+                        '<option value="{value}"{attr}>{caption}</option>',
+                        array(
+                            '{value}' => esc_attr( $option_value ),
+                            '{attr}' => selected( get_option( $option_name ), $option_value, false ),
+                            '{caption}' => esc_html( $option_label ),
+                        )
+                    );
+                }
+                $options_str .= '</optgroup>';
+            } else {
+                $options_str .= strtr(
+                    '<option value="{value}"{attr}>{caption}</option>',
+                    array(
+                        '{value}' => esc_attr( $option ),
+                        '{attr}' => selected( get_option( $option_name ), $option, false ),
+                        '{caption}' => esc_html( $value ),
+                    )
+                );
+            }
+        }
+
+        $attributes['id'] = $option_name;
+        $attributes['class'] = 'form-control custom-select';
+        $attributes['name'] = $option_name;
+
+        $attributes_str = '';
+        foreach ( $attributes as $attr => $value ) {
+            if ( $value !== null ) {
+                $attributes_str .= sprintf( ' %s="%s"', $attr, esc_attr( $value ) );
+            }
+        }
+
+        $control = strtr(
+            '<select {attributes}>{options}</select>',
+            array(
+                '{attributes}' => $attributes_str,
                 '{options}' => $options_str,
             )
         );

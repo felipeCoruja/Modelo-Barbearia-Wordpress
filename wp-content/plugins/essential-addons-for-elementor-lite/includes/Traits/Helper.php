@@ -81,6 +81,7 @@ trait Helper
 
         if ( $class == '\Essential_Addons_Elementor\Elements\Post_Grid' && $settings[ 'orderby' ] === 'rand' ) {
             $args[ 'post__not_in' ] = array_unique( $_REQUEST[ 'post__not_in' ] );
+	        unset( $args['offset'] );
         }
 
         // ensure control name compatibility to old code if it is post block
@@ -438,6 +439,11 @@ trait Helper
     }
 
     public function select2_ajax_get_posts_value_titles() {
+
+	    if ( empty( $_POST[ 'id' ] ) ) {
+		    wp_send_json_error( [] );
+	    }
+
         if ( empty( array_filter($_POST[ 'id' ]) ) ) {
             wp_send_json_error( [] );
         }
@@ -512,6 +518,10 @@ trait Helper
                 $this->page_id = null;
             }
         }
+
+	    $max_page = empty( $args['max_page'] ) ? false : $args['max_page'];
+	    unset( $args['max_page'] );
+
         $this->add_render_attribute('load-more', [
             'class'          => "eael-load-more-button",
             'id'             => "eael-load-more-btn-" . $this->get_id(),
@@ -529,6 +539,11 @@ trait Helper
             'data-page'     => 1,
             'data-args'     => http_build_query( $args ),
         ]);
+
+	    if ( $max_page ) {
+		    $this->add_render_attribute( 'load-more', [ 'data-max-page' => $max_page ] );
+	    }
+
         if ( ('true' == $settings['show_load_more'] || 1 == $settings['show_load_more'] || 'yes' == $settings['show_load_more']) && $args['posts_per_page'] != '-1' ) { ?>
             <div class="eael-load-more-button-wrap<?php echo "eael-dynamic-filterable-gallery" == $this->get_name() ? " dynamic-filter-gallery-loadmore" : ""; ?>">
                 <button <?php $this->print_render_attribute_string( 'load-more' ); ?>>
@@ -773,9 +788,9 @@ trait Helper
                             <img src="<?php echo EAEL_PLUGIN_URL . 'assets/admin/images/templately/logo.svg'; ?>" alt="">
                         </div>
                         <ul class="eael-promo-temp__feature__list">
-                            <li><?php _e('1,000+ Stunning Templates','essential-addons-for-elementor-lite'); ?></li>
+                            <li><?php _e('1,700+ Stunning Templates','essential-addons-for-elementor-lite'); ?></li>
                             <li><?php _e('Supports Elementor & Gutenberg','essential-addons-for-elementor-lite'); ?></li>
-                            <li><?php _e('Powering up 17,000+ Websites','essential-addons-for-elementor-lite'); ?></li>
+                            <li><?php _e('Powering up 100,000+ Websites','essential-addons-for-elementor-lite'); ?></li>
                             <li><?php _e('Cloud Collaboration with Team','essential-addons-for-elementor-lite'); ?></li>
                         </ul>
                         <form class="eael-promo-temp__form">
